@@ -31,4 +31,5 @@ select = ["E", "F", "W", "I", "B", "UP", "SIM"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-ra --strict-markers"
+addopts = "-ra --strict-markers -m \"not live\""
+markers = ["live: calls the real Meta Model API and spends credit (run with -m live)"]

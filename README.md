@@ -12,7 +12,8 @@ Requires [uv](https://docs.astral.sh/uv/) and Python 3.11.
 ```sh
 uv sync                     # create .venv and install deps
 cp .env.example .env        # then fill in META_API_KEY
-uv run pytest               # tests
+uv run pytest               # tests (offline; no API spend)
+uv run pytest -m live       # one real Meta API call (needs META_API_KEY)
 uv run ruff check .         # lint
 uv run ruff format .        # format
 ```
@@ -21,3 +22,6 @@ Settings live in two places:
 
 - `config.toml`: non-secret settings (models, budget, Modal GPU, paths). Committed.
 - `.env`: secrets (`META_API_KEY`). Git-ignored. Variables already set in your shell win.
+
+Every model call is appended to `traces/model_calls.jsonl` with its token
+counts and dollar cost. Prices live in `src/triton_kernel_agent/pricing.py`.
