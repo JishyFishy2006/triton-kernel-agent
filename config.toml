@@ -22,7 +22,9 @@ max_attempts = 10
 max_usd_per_task = 3.0
 
 [modal]
-gpu = "H100"
+# "H100!" stops Modal from silently upgrading to an H200, which would skew benchmarks.
+# Modal H100s are all SXM.
+gpu = "H100!"
 eval_timeout_s = 120
 
 [paths]
