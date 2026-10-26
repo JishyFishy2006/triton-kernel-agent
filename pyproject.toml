@@ -1,0 +1,13 @@
+[project]
+name = "triton-kernel-agent"
+version = "0.1.0"
+description = "LLM agent that writes Triton kernels, with an anti-cheat harness on Modal H100s"
+authors = [
+    { name = "JishyFishy2006", email = "jishnusanyal2006@gmail.com" }
+]
+requires-python = ">=3.11"
+dependencies = []
+
+[build-system]
+requires = ["uv_build>=0.13.0,<0.14.0"]
+build-backend = "uv_build"
