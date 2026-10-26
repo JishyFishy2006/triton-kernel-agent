@@ -6,7 +6,8 @@ from dataclasses import dataclass
 # Query passed to nvidia-smi; parse_nvidia_smi expects its CSV columns in this order.
 SMI_QUERY = ["--query-gpu=name,driver_version,memory.total", "--format=csv,noheader"]
 
-_CUDA_RE = re.compile(r"CUDA Version:\s*([\d.]+)")
+# Drivers >= 610 print "CUDA UMD Version"; older ones print "CUDA Version".
+_CUDA_RE = re.compile(r"CUDA (?:UMD )?Version:\s*([\d.]+)")
 
 
 @dataclass(frozen=True)

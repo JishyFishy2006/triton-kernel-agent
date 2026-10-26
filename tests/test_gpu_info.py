@@ -21,6 +21,22 @@ def test_parses_sxm_h100():
     )
 
 
+# Captured from a Modal H100! container on 2026-10-26 (driver 610 renamed the field).
+MODAL_SMI_HEADER = """\
+Mon Oct 26 20:16:17 2026
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 610.57.04              KMD Version: 610.57.04     CUDA UMD Version: 13.3     |
++-----------------------------------------+------------------------+----------------------+
+"""
+
+
+def test_parses_new_driver_header_from_modal():
+    info = parse_nvidia_smi(MODAL_SMI_HEADER, "NVIDIA H100 80GB HBM3, 610.57.04, 81559 MiB\n")
+    assert info.cuda_version == "13.3"
+    assert info.driver_version == "610.57.04"
+    assert info.form_factor == "SXM"
+
+
 def test_parses_pcie_h100():
     info = parse_nvidia_smi(SMI_HEADER, "NVIDIA H100 PCIe, 570.86.15, 81559 MiB\n")
     assert info.form_factor == "PCIe"
