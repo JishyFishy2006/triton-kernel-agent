@@ -7,6 +7,8 @@ authors = [
 ]
 requires-python = ">=3.11"
 dependencies = [
+    "httpx2>=2.16.0",
+    "openai>=3.38.0",
     "python-dotenv>=1.2.4",
 ]
 
@@ -29,4 +31,5 @@ select = ["E", "F", "W", "I", "B", "UP", "SIM"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-ra --strict-markers"
+addopts = "-ra --strict-markers -m \"not live\""
+markers = ["live: calls the real Meta Model API and spends credit (run with -m live)"]

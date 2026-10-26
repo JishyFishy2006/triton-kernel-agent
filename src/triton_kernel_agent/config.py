@@ -8,7 +8,8 @@ from typing import Any
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CONFIG_PATH = REPO_ROOT / "config.toml"
 
-REASONING_EFFORTS = ("low", "medium", "high")
+# "none" is also an API value, but Muse Spark rejects it with HTTP 400.
+REASONING_EFFORTS = ("minimal", "low", "medium", "high", "xhigh")
 MODEL_SETUPS = ("spark_only", "wonder_only", "wonder_spark")
 
 
@@ -22,6 +23,8 @@ class ModelConfig:
 class ModelsConfig:
     base_url: str
     setup: str
+    max_retries: int
+    timeout_s: float
     planner: ModelConfig
     fixer: ModelConfig
 
@@ -74,6 +77,8 @@ def load_config(path: Path = DEFAULT_CONFIG_PATH) -> Config:
         models=ModelsConfig(
             base_url=models["base_url"],
             setup=models["setup"],
+            max_retries=int(models["max_retries"]),
+            timeout_s=float(models["timeout_s"]),
             planner=_model(models["planner"]),
             fixer=_model(models["fixer"]),
         ),
