@@ -9,6 +9,7 @@ def test_repo_config_loads():
     cfg = load_config()
     assert isinstance(cfg, Config)
     assert cfg.models.base_url == "https://api.meta.ai/v1"
+    assert cfg.models.max_retries == 5
     assert cfg.models.planner.name == "muse-wonder-1.0"
     assert cfg.models.planner.reasoning_effort == "high"
     assert cfg.models.fixer.name == "muse-spark-1.3"

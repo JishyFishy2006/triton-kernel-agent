@@ -4,6 +4,10 @@
 base_url = "https://api.meta.ai/v1"
 # One of: "spark_only", "wonder_only", "wonder_spark" (see B16).
 setup = "wonder_spark"
+# The SDK retries 429s, 5xx and connection errors with exponential backoff and
+# honors Retry-After, as Meta's rate-limit docs ask.
+max_retries = 5
+timeout_s = 600
 
 [models.planner]
 name = "muse-wonder-1.0"
