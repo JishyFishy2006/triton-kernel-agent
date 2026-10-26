@@ -13,9 +13,11 @@ Requires [uv](https://docs.astral.sh/uv/) and Python 3.11.
 uv sync                     # create .venv and install deps
 cp .env.example .env        # then fill in META_API_KEY
 uv run pytest               # tests (offline; no API spend)
-uv run pytest -m live       # one real Meta API call (needs META_API_KEY)
+uv run pytest -m live       # real Meta API call + Modal H100 run (spends a few cents)
 uv run ruff check .         # lint
 uv run ruff format .        # format
+uv run modal setup          # one-time Modal login
+uv run modal run src/triton_kernel_agent/modal_hello.py   # which GPU do we get?
 ```
 
 Settings live in two places:

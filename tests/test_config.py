@@ -15,7 +15,7 @@ def test_repo_config_loads():
     assert cfg.models.fixer.name == "muse-spark-1.3"
     assert cfg.models.fixer.reasoning_effort == "low"
     assert cfg.budget.max_attempts == 10
-    assert cfg.modal.gpu == "H100"
+    assert cfg.modal.gpu == "H100!"
 
 
 def test_paths_resolve_relative_to_config_file(tmp_path: Path):
