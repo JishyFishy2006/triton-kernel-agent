@@ -472,6 +472,7 @@ name = "triton-kernel-agent"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "httpx2" },
     { name = "openai" },
     { name = "python-dotenv" },
 ]
@@ -484,6 +485,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "httpx2", specifier = ">=2.16.0" },
     { name = "openai", specifier = ">=3.38.0" },
     { name = "python-dotenv", specifier = ">=1.2.4" },
 ]
