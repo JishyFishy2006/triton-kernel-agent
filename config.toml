@@ -1,0 +1,27 @@
+# Non-secret settings. Secrets (API keys) go in .env, never here.
+
+[models]
+base_url = "https://api.meta.ai/v1"
+# One of: "spark_only", "wonder_only", "wonder_spark" (see B16).
+setup = "wonder_spark"
+
+[models.planner]
+name = "muse-wonder-1.0"
+reasoning_effort = "high"
+
+[models.fixer]
+name = "muse-spark-1.3"
+reasoning_effort = "low"
+
+[budget]
+max_attempts = 10
+max_usd_per_task = 3.0
+
+[modal]
+gpu = "H100"
+eval_timeout_s = 120
+
+[paths]
+# Relative paths resolve against this file's directory.
+db = "data/results.duckdb"
+traces = "traces"
