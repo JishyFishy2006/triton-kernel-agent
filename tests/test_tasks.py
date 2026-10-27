@@ -96,3 +96,14 @@ def test_metadata_is_merged_by_id(tmp_path):
 
     (task,) = load_tasks(manifest_path=manifest, metadata_path=tmp_path / "missing.json")
     assert (task.bytes, task.flops) == (None, None)
+
+
+def test_every_task_has_measured_bytes_and_flops():
+    for task in load_tasks(include_canaries=True):
+        assert task.bytes and task.bytes > 0, task.id
+        assert task.flops is not None and task.flops >= 0, task.id
+
+    square = get_task("L1-1")  # 4096 x 4096 fp32 matmul
+    assert square.flops == 2 * 4096**3
+    assert square.bytes == 3 * 4096 * 4096 * 4
+    assert get_task("L1-19").flops == 0  # elementwise: memory-bound, no matmul FLOPs

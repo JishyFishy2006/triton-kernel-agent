@@ -1,0 +1,773 @@
+{
+ "kernelbench_commit": "423217d9fda91e0c2d67e4a43bf62f96f6d104f1",
+ "measured_on": {
+  "gpu": "NVIDIA H100 80GB HBM3",
+  "torch": "2.14.1+cu130"
+ },
+ "tasks": {
+  "L1-12": {
+   "input_shapes": [
+    [
+     4096
+    ],
+    [
+     4096,
+     4096
+    ]
+   ],
+   "output_shape": [
+    4096,
+    4096
+   ],
+   "output_dtype": "float32",
+   "bytes": 134234112,
+   "flops": 0
+  },
+  "L1-88": {
+   "input_shapes": [
+    [
+     8192,
+     8192
+    ]
+   ],
+   "output_shape": [
+    8192,
+    8192
+   ],
+   "output_dtype": "float32",
+   "bytes": 536870912,
+   "flops": 0
+  },
+  "L1-54": {
+   "input_shapes": [
+    [
+     16,
+     3,
+     64,
+     64,
+     64
+    ]
+   ],
+   "output_shape": [
+    16,
+    64,
+    62,
+    62,
+    62
+   ],
+   "output_dtype": "float32",
+   "bytes": 1026543872,
+   "flops": 39535755264
+  },
+  "L1-56": {
+   "input_shapes": [
+    [
+     8,
+     64,
+     512,
+     256
+    ]
+   ],
+   "output_shape": [
+    8,
+    128,
+    508,
+    250
+   ],
+   "output_dtype": "float32",
+   "bytes": 789774336,
+   "flops": 582615040000
+  },
+  "L2-14": {
+   "input_shapes": [
+    [
+     1024,
+     8192
+    ]
+   ],
+   "output_shape": [
+    1024,
+    1
+   ],
+   "output_dtype": "float32",
+   "bytes": 301993984,
+   "flops": 137438953472
+  },
+  "L2-73": {
+   "input_shapes": [
+    [
+     128,
+     8,
+     128,
+     128
+    ]
+   ],
+   "output_shape": [
+    128,
+    64,
+    126,
+    126
+   ],
+   "output_dtype": "float32",
+   "bytes": 587353352,
+   "flops": 18728091648
+  },
+  "L2-27": {
+   "input_shapes": [
+    [
+     1024,
+     3,
+     16,
+     32,
+     32
+    ]
+   ],
+   "output_shape": [
+    1024,
+    16
+   ],
+   "output_dtype": "float32",
+   "bytes": 201404608,
+   "flops": 68784488448
+  },
+  "L1-19": {
+   "input_shapes": [
+    [
+     4096,
+     393216
+    ]
+   ],
+   "output_shape": [
+    4096,
+    393216
+   ],
+   "output_dtype": "float32",
+   "bytes": 12884901888,
+   "flops": 0
+  },
+  "L1-25": {
+   "input_shapes": [
+    [
+     4096,
+     393216
+    ]
+   ],
+   "output_shape": [
+    4096,
+    393216
+   ],
+   "output_dtype": "float32",
+   "bytes": 12884901888,
+   "flops": 0
+  },
+  "L1-29": {
+   "input_shapes": [
+    [
+     4096,
+     393216
+    ]
+   ],
+   "output_shape": [
+    4096,
+    393216
+   ],
+   "output_dtype": "float32",
+   "bytes": 12884901888,
+   "flops": 0
+  },
+  "L1-23": {
+   "input_shapes": [
+    [
+     4096,
+     393216
+    ]
+   ],
+   "output_shape": [
+    4096,
+    393216
+   ],
+   "output_dtype": "float32",
+   "bytes": 12884901888,
+   "flops": 0
+  },
+  "L1-35": {
+   "input_shapes": [
+    [
+     112,
+     64,
+     512,
+     512
+    ]
+   ],
+   "output_shape": [
+    112,
+    64,
+    512,
+    512
+   ],
+   "output_dtype": "float32",
+   "bytes": 15032386048,
+   "flops": 0
+  },
+  "L1-36": {
+   "input_shapes": [
+    [
+     112,
+     64,
+     512,
+     512
+    ]
+   ],
+   "output_shape": [
+    112,
+    64,
+    512,
+    512
+   ],
+   "output_dtype": "float32",
+   "bytes": 15032385536,
+   "flops": 0
+  },
+  "L1-40": {
+   "input_shapes": [
+    [
+     16,
+     64,
+     256,
+     256
+    ]
+   ],
+   "output_shape": [
+    16,
+    64,
+    256,
+    256
+   ],
+   "output_dtype": "float32",
+   "bytes": 570425344,
+   "flops": 0
+  },
+  "L1-47": {
+   "input_shapes": [
+    [
+     128,
+     4096,
+     4095
+    ]
+   ],
+   "output_shape": [
+    128,
+    1,
+    4095
+   ],
+   "output_dtype": "float32",
+   "bytes": 8589934080,
+   "flops": 0
+  },
+  "L1-51": {
+   "input_shapes": [
+    [
+     128,
+     4096,
+     4095
+    ]
+   ],
+   "output_shape": [
+    128,
+    4095
+   ],
+   "output_dtype": "int64",
+   "bytes": 8592030720,
+   "flops": 0
+  },
+  "L1-89": {
+   "input_shapes": [
+    [
+     32768,
+     32768
+    ]
+   ],
+   "output_shape": [
+    32768,
+    32768
+   ],
+   "output_dtype": "float32",
+   "bytes": 8589934592,
+   "flops": 0
+  },
+  "L1-1": {
+   "input_shapes": [
+    [
+     4096,
+     4096
+    ],
+    [
+     4096,
+     4096
+    ]
+   ],
+   "output_shape": [
+    4096,
+    4096
+   ],
+   "output_dtype": "float32",
+   "bytes": 201326592,
+   "flops": 137438953472
+  },
+  "L1-3": {
+   "input_shapes": [
+    [
+     128,
+     512,
+     1024
+    ],
+    [
+     128,
+     1024,
+     2048
+    ]
+   ],
+   "output_shape": [
+    128,
+    512,
+    2048
+   ],
+   "output_dtype": "float32",
+   "bytes": 1879048192,
+   "flops": 274877906944
+  },
+  "L1-7": {
+   "input_shapes": [
+    [
+     32768,
+     64
+    ],
+    [
+     64,
+     32768
+    ]
+   ],
+   "output_shape": [
+    32768,
+    32768
+   ],
+   "output_dtype": "float32",
+   "bytes": 4311744512,
+   "flops": 137438953472
+  },
+  "L1-8": {
+   "input_shapes": [
+    [
+     8205,
+     2949
+    ],
+    [
+     2949,
+     5921
+    ]
+   ],
+   "output_shape": [
+    8205,
+    5921
+   ],
+   "output_dtype": "float32",
+   "bytes": 360957516,
+   "flops": 286535485890
+  },
+  "L1-9": {
+   "input_shapes": [
+    [
+     32768,
+     32
+    ],
+    [
+     32,
+     32768
+    ]
+   ],
+   "output_shape": [
+    32768,
+    32768
+   ],
+   "output_dtype": "float32",
+   "bytes": 4303355904,
+   "flops": 68719476736
+  },
+  "L1-14": {
+   "input_shapes": [
+    [
+     4096,
+     4096
+    ],
+    [
+     4096,
+     4096
+    ]
+   ],
+   "output_shape": [
+    4096,
+    4096
+   ],
+   "output_dtype": "float32",
+   "bytes": 201326592,
+   "flops": 137438953472
+  },
+  "L1-42": {
+   "input_shapes": [
+    [
+     32,
+     64,
+     512,
+     512
+    ]
+   ],
+   "output_shape": [
+    32,
+    64,
+    511,
+    511
+   ],
+   "output_dtype": "float32",
+   "bytes": 4286586880,
+   "flops": 0
+  },
+  "L1-95": {
+   "input_shapes": [
+    [
+     32768,
+     4096
+    ],
+    [
+     32768
+    ]
+   ],
+   "output_shape": [],
+   "output_dtype": "float32",
+   "bytes": 537133060,
+   "flops": 0
+  },
+  "L1-98": {
+   "input_shapes": [
+    [
+     16384,
+     16384
+    ],
+    [
+     16384,
+     16384
+    ]
+   ],
+   "output_shape": [],
+   "output_dtype": "float32",
+   "bytes": 2147483652,
+   "flops": 0
+  },
+  "L1-97": {
+   "input_shapes": [
+    [
+     32,
+     32,
+     512,
+     1024
+    ],
+    [
+     32,
+     32,
+     512,
+     1024
+    ],
+    [
+     32,
+     32,
+     512,
+     1024
+    ]
+   ],
+   "output_shape": [
+    32,
+    32,
+    512,
+    1024
+   ],
+   "output_dtype": "float32",
+   "bytes": 8589934592,
+   "flops": 1099511627776
+  },
+  "L2-76": {
+   "input_shapes": [
+    [
+     1024,
+     8192
+    ]
+   ],
+   "output_shape": [
+    1024,
+    8192
+   ],
+   "output_dtype": "float32",
+   "bytes": 335577088,
+   "flops": 137438953472
+  },
+  "L2-86": {
+   "input_shapes": [
+    [
+     1024,
+     8192
+    ]
+   ],
+   "output_shape": [
+    1024,
+    8192
+   ],
+   "output_dtype": "float32",
+   "bytes": 335577088,
+   "flops": 137438953472
+  },
+  "L2-95": {
+   "input_shapes": [
+    [
+     1024,
+     8192
+    ]
+   ],
+   "output_shape": [
+    1024,
+    8192
+   ],
+   "output_dtype": "float32",
+   "bytes": 335609856,
+   "flops": 137438953472
+  },
+  "L2-56": {
+   "input_shapes": [
+    [
+     128,
+     32768
+    ]
+   ],
+   "output_shape": [
+    128,
+    1
+   ],
+   "output_dtype": "float32",
+   "bytes": 4311876096,
+   "flops": 274877906944
+  },
+  "L2-55": {
+   "input_shapes": [
+    [
+     128,
+     32768
+    ]
+   ],
+   "output_shape": [
+    128
+   ],
+   "output_dtype": "float32",
+   "bytes": 4311876096,
+   "flops": 274877906944
+  },
+  "L2-99": {
+   "input_shapes": [
+    [
+     1024,
+     8192
+    ]
+   ],
+   "output_shape": [
+    1024,
+    8192
+   ],
+   "output_dtype": "float32",
+   "bytes": 335577088,
+   "flops": 137438953472
+  },
+  "L2-30": {
+   "input_shapes": [
+    [
+     1024,
+     8192
+    ]
+   ],
+   "output_shape": [
+    1024,
+    8192
+   ],
+   "output_dtype": "float32",
+   "bytes": 335642624,
+   "flops": 137438953472
+  },
+  "L2-88": {
+   "input_shapes": [
+    [
+     1024,
+     8192
+    ]
+   ],
+   "output_shape": [
+    1024,
+    8192
+   ],
+   "output_dtype": "float32",
+   "bytes": 335675392,
+   "flops": 137438953472
+  },
+  "L2-45": {
+   "input_shapes": [
+    [
+     16384,
+     2048
+    ]
+   ],
+   "output_shape": [
+    16384
+   ],
+   "output_dtype": "float32",
+   "bytes": 184635392,
+   "flops": 412316860416
+  },
+  "L2-64": {
+   "input_shapes": [
+    [
+     1024,
+     8192
+    ]
+   ],
+   "output_shape": [
+    1024,
+    1
+   ],
+   "output_dtype": "float32",
+   "bytes": 302026752,
+   "flops": 137438953472
+  },
+  "L2-1": {
+   "input_shapes": [
+    [
+     128,
+     64,
+     128,
+     128
+    ]
+   ],
+   "output_shape": [
+    128,
+    128,
+    126,
+    126
+   ],
+   "output_dtype": "float32",
+   "bytes": 1577616384,
+   "flops": 299649466368
+  },
+  "L2-67": {
+   "input_shapes": [
+    [
+     128,
+     8,
+     256,
+     256
+    ]
+   ],
+   "output_shape": [
+    128,
+    64
+   ],
+   "output_dtype": "float32",
+   "bytes": 268486912,
+   "flops": 76106170368
+  },
+  "C-1": {
+   "input_shapes": [
+    [
+     1024,
+     8192
+    ]
+   ],
+   "output_shape": [
+    1024,
+    1
+   ],
+   "output_dtype": "float32",
+   "bytes": 302026752,
+   "flops": 137438953472
+  },
+  "C-2": {
+   "input_shapes": [
+    [
+     1024,
+     8192
+    ]
+   ],
+   "output_shape": [
+    1024,
+    8192
+   ],
+   "output_dtype": "float32",
+   "bytes": 335577088,
+   "flops": 137438953472
+  },
+  "C-3": {
+   "input_shapes": [
+    [
+     1024,
+     8192
+    ]
+   ],
+   "output_shape": [
+    1024,
+    8192
+   ],
+   "output_dtype": "float32",
+   "bytes": 335577088,
+   "flops": 137438953472
+  },
+  "C-4": {
+   "input_shapes": [
+    [
+     1000,
+     8000
+    ]
+   ],
+   "output_shape": [
+    1000,
+    6000
+   ],
+   "output_dtype": "float32",
+   "bytes": 248024000,
+   "flops": 96000000000
+  },
+  "L2-23": {
+   "input_shapes": [
+    [
+     128,
+     3,
+     24,
+     32,
+     32
+    ]
+   ],
+   "output_shape": [
+    128
+   ],
+   "output_dtype": "float32",
+   "bytes": 37757312,
+   "flops": 9853747200
+  },
+  "L2-80": {
+   "input_shapes": [
+    [
+     1024,
+     8192
+    ]
+   ],
+   "output_shape": [
+    1024,
+    1
+   ],
+   "output_dtype": "float32",
+   "bytes": 302026752,
+   "flops": 137438953472
+  }
+ }
+}
