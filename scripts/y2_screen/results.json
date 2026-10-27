@@ -1,0 +1,2956 @@
+[
+ {
+  "task": "L1-1",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    4096,
+    4096
+   ],
+   [
+    4096,
+    4096
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32",
+   "torch.float32"
+  ],
+  "input_gb": 0.134217728,
+  "param_m": 0.0,
+  "modules": [],
+  "peak_mem_gb": 0.234881024,
+  "output": [
+   4096,
+   4096
+  ],
+  "out_stats": {
+   "mean": 1023.984130859375,
+   "std": 14.0560302734375,
+   "frac_zero": 0.0,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 0.0592041015625,
+   "max_rel": 5.822958412250928e-05,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 2.6666879653930664,
+  "eager_tf32_ms": 0.36164799332618713,
+  "compile_s": 4.7796947956085205,
+  "compile_ms": 2.720223903656006
+ },
+ {
+  "task": "L1-3",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    128,
+    512,
+    1024
+   ],
+   [
+    128,
+    1024,
+    2048
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32",
+   "torch.float32"
+  ],
+  "input_gb": 1.34217728,
+  "param_m": 0.0,
+  "modules": [],
+  "peak_mem_gb": 1.912602624,
+  "output": [
+   128,
+   512,
+   2048
+  ],
+  "out_stats": {
+   "mean": 255.97000122070312,
+   "std": 7.059688091278076,
+   "frac_zero": 0.0,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 0.017822265625,
+   "max_rel": 6.852030518286885e-05,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 5.308671951293945,
+  "eager_tf32_ms": 0.9436960220336914,
+  "compile_s": 4.4384119510650635,
+  "compile_ms": 5.345376014709473
+ },
+ {
+  "task": "L1-7",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    32768,
+    64
+   ],
+   [
+    64,
+    32768
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32",
+   "torch.float32"
+  ],
+  "input_gb": 0.016777216,
+  "param_m": 0.0,
+  "modules": [],
+  "peak_mem_gb": 4.345298944,
+  "output": [
+   32768,
+   32768
+  ],
+  "out_stats": {
+   "mean": 16.008468627929688,
+   "std": 1.7664135694503784,
+   "frac_zero": 0.0,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 0.0045604705810546875,
+   "max_rel": 0.00026446851471747493,
+   "pass_1e-4": false,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 4.047743797302246,
+  "eager_tf32_ms": 1.7801599502563477,
+  "compile_s": 4.2942259311676025,
+  "compile_ms": 4.053744077682495
+ },
+ {
+  "task": "L1-8",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    8205,
+    2949
+   ],
+   [
+    2949,
+    5921
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32",
+   "torch.float32"
+  ],
+  "input_gb": 0.166630296,
+  "param_m": 0.0,
+  "modules": [],
+  "peak_mem_gb": 0.39522048,
+  "output": [
+   8205,
+   5921
+  ],
+  "out_stats": {
+   "mean": 737.1595458984375,
+   "std": 12.107041358947754,
+   "frac_zero": 0.0,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 0.0440673828125,
+   "max_rel": 5.981499896554256e-05,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 6.430000066757202,
+  "eager_tf32_ms": 2.4183359146118164,
+  "compile_s": 4.157665729522705,
+  "compile_ms": 6.437535762786865
+ },
+ {
+  "task": "L1-9",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    32768,
+    32
+   ],
+   [
+    32,
+    32768
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32",
+   "torch.float32"
+  ],
+  "input_gb": 0.008388608,
+  "param_m": 0.0,
+  "modules": [],
+  "peak_mem_gb": 4.336910336,
+  "output": [
+   32768,
+   32768
+  ],
+  "out_stats": {
+   "mean": 7.99813175201416,
+   "std": 1.2418025732040405,
+   "frac_zero": 0.0,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 0.003345489501953125,
+   "max_rel": 0.0003832956872566462,
+   "pass_1e-4": false,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 2.5837440490722656,
+  "eager_tf32_ms": 1.6366400122642517,
+  "compile_s": 4.7108471393585205,
+  "compile_ms": 2.6190719604492188
+ },
+ {
+  "task": "L1-12",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    4096
+   ],
+   [
+    4096,
+    4096
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32",
+   "torch.float32"
+  ],
+  "input_gb": 0.067125248,
+  "param_m": 0.0,
+  "modules": [],
+  "peak_mem_gb": 0.134234112,
+  "output": [
+   4096,
+   4096
+  ],
+  "out_stats": {
+   "mean": 0.24639324843883514,
+   "std": 0.21902164816856384,
+   "frac_zero": 5.960464477539063e-08,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 0.0761599987745285,
+  "eager_tf32_ms": 0.07606399804353714,
+  "compile_s": 5.430614471435547,
+  "compile_ms": 0.06531199812889099
+ },
+ {
+  "task": "L1-14",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    4096,
+    4096
+   ],
+   [
+    4096,
+    4096
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32",
+   "torch.float32"
+  ],
+  "input_gb": 0.134217728,
+  "param_m": 0.0,
+  "modules": [],
+  "peak_mem_gb": 0.301989888,
+  "output": [
+   4096,
+   4096
+  ],
+  "out_stats": {
+   "mean": 170.83172607421875,
+   "std": 241.6352996826172,
+   "frac_zero": 0.4998779296875,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 0.04742431640625,
+   "max_rel": 0.0008648524963768142,
+   "pass_1e-4": false,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 2.7227200269699097,
+  "eager_tf32_ms": 0.3811360001564026,
+  "compile_s": 4.368041038513184,
+  "compile_ms": 2.723583936691284
+ },
+ {
+  "task": "L1-19",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    4096,
+    393216
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 6.442450944,
+  "param_m": 0.0,
+  "modules": [],
+  "peak_mem_gb": 12.884901888,
+  "output": [
+   4096,
+   393216
+  ],
+  "out_stats": {
+   "mean": 0.49999457597732544,
+   "std": 0.28867995738983154,
+   "frac_zero": 5.960464477539063e-08,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": true,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 4.295487880706787,
+  "eager_tf32_ms": 4.29369592666626,
+  "compile_s": 4.3977038860321045,
+  "compile_ms": 4.2885918617248535
+ },
+ {
+  "task": "L1-23",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    4096,
+    393216
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 6.442450944,
+  "param_m": 0.0,
+  "modules": [],
+  "peak_mem_gb": 12.884901888,
+  "output": [
+   4096,
+   393216
+  ],
+  "out_stats": {
+   "mean": 2.543131586207892e-06,
+   "std": 7.281532248271105e-07,
+   "frac_zero": 0.0,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 8.6867356300354,
+  "eager_tf32_ms": 8.684831619262695,
+  "compile_s": 4.9321722984313965,
+  "compile_ms": 6.693871974945068
+ },
+ {
+  "task": "L1-25",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    4096,
+    393216
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 6.442450944,
+  "param_m": 0.0,
+  "modules": [],
+  "peak_mem_gb": 19.327352832,
+  "output": [
+   4096,
+   393216
+  ],
+  "out_stats": {
+   "mean": 0.329439252614975,
+   "std": 0.2126762568950653,
+   "frac_zero": 5.960464477539063e-08,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 10.626240253448486,
+  "eager_tf32_ms": 10.62377643585205,
+  "compile_s": 4.825382947921753,
+  "compile_ms": 4.288112163543701
+ },
+ {
+  "task": "L1-29",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    4096,
+    393216
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 6.442450944,
+  "param_m": 0.0,
+  "modules": [],
+  "peak_mem_gb": 12.91845632,
+  "output": [
+   4096,
+   393216
+  ],
+  "out_stats": {
+   "mean": 0.9838160276412964,
+   "std": 0.17949359118938446,
+   "frac_zero": 0.0,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 4.2969279289245605,
+  "eager_tf32_ms": 4.296559810638428,
+  "compile_s": 0.6665308475494385,
+  "compile_ms": 4.2911200523376465
+ },
+ {
+  "task": "L1-35",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    112,
+    64,
+    512,
+    512
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 7.516192768,
+  "param_m": 0.000128,
+  "modules": [
+   "GroupNorm"
+  ],
+  "peak_mem_gb": 15.066005504,
+  "output": [
+   112,
+   64,
+   512,
+   512
+  ],
+  "out_stats": {
+   "mean": 3.095140588271761e-09,
+   "std": 0.999940037727356,
+   "frac_zero": 0.0,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 9.97590446472168,
+  "eager_tf32_ms": 9.976384162902832,
+  "compile_s": 0.878467321395874,
+  "compile_ms": 7.86571192741394
+ },
+ {
+  "task": "L1-36",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    112,
+    64,
+    512,
+    512
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 7.516192768,
+  "param_m": 0.0,
+  "modules": [],
+  "peak_mem_gb": 15.18338048,
+  "output": [
+   112,
+   64,
+   512,
+   512
+  ],
+  "out_stats": {
+   "mean": 0.8667028546333313,
+   "std": 0.4987942576408386,
+   "frac_zero": 5.960464477539063e-08,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 14.253136157989502,
+  "eager_tf32_ms": 14.249152183532715,
+  "compile_s": 1.0789189338684082,
+  "compile_ms": 7.661312103271484
+ },
+ {
+  "task": "L1-40",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    16,
+    64,
+    256,
+    256
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 0.268435456,
+  "param_m": 8.388608,
+  "modules": [
+   "LayerNorm"
+  ],
+  "peak_mem_gb": 0.6039808,
+  "output": [
+   16,
+   64,
+   256,
+   256
+  ],
+  "out_stats": {
+   "mean": 8.625647751614451e-09,
+   "std": 0.9999411702156067,
+   "frac_zero": 2.9802322387695312e-08,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 8.209680080413818,
+  "eager_tf32_ms": 8.20692777633667,
+  "compile_s": 1.4704272747039795,
+  "compile_ms": 0.4752800017595291
+ },
+ {
+  "task": "L1-42",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    32,
+    64,
+    512,
+    512
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 2.147483648,
+  "param_m": 0.0,
+  "modules": [
+   "MaxPool2d"
+  ],
+  "peak_mem_gb": 8.598347776,
+  "output": [
+   32,
+   64,
+   511,
+   511
+  ],
+  "out_stats": {
+   "mean": 0.9410350918769836,
+   "std": 0.05561645328998566,
+   "frac_zero": 0.0,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 10.841343879699707,
+  "eager_tf32_ms": 10.837663650512695,
+  "compile_s": 1.3343415260314941,
+  "compile_ms": 2.7056961059570312
+ },
+ {
+  "task": "L1-47",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    128,
+    4096,
+    4095
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 8.58783744,
+  "param_m": 0.0,
+  "modules": [],
+  "peak_mem_gb": 8.58993408,
+  "output": [
+   128,
+   1,
+   4095
+  ],
+  "out_stats": {
+   "mean": 2048.0,
+   "std": 18.48892593383789,
+   "frac_zero": 0.0,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 2.960479974746704,
+  "eager_tf32_ms": 2.957119941711426,
+  "compile_s": 1.432427167892456,
+  "compile_ms": 3.3512001037597656
+ },
+ {
+  "task": "L1-51",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    128,
+    4096,
+    4095
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 8.58783744,
+  "param_m": 0.0,
+  "modules": [],
+  "peak_mem_gb": 8.633971712,
+  "output": [
+   128,
+   4095
+  ],
+  "out_stats": {
+   "mean": 2049.003662109375,
+   "std": 1182.8013916015625,
+   "frac_zero": 0.00025946275946275946,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "eager_ms": 3.170415997505188,
+  "eager_tf32_ms": 3.1724640130996704,
+  "compile_s": 2.1473333835601807,
+  "compile_ms": 3.468191981315613
+ },
+ {
+  "task": "L1-54",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    16,
+    3,
+    64,
+    64,
+    64
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 0.050331648,
+  "param_m": 0.005184,
+  "modules": [
+   "Conv3d"
+  ],
+  "peak_mem_gb": 1.06009856,
+  "output": [
+   16,
+   64,
+   62,
+   62,
+   62
+  ],
+  "out_stats": {
+   "mean": -0.008845731616020203,
+   "std": 0.3611968457698822,
+   "frac_zero": 0.0,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 0.0005266666412353516,
+   "max_rel": 307.3509513455974,
+   "pass_1e-4": false,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0005266666412353516,
+   "max_rel": 307.3509513455974,
+   "pass_1e-4": false,
+   "pass_1e-2": true
+  },
+  "eager_ms": 2.764688014984131,
+  "eager_tf32_ms": 2.7040960788726807,
+  "compile_s": 0.13274359703063965,
+  "compile_ms": 2.776624083518982
+ },
+ {
+  "task": "L1-56",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    8,
+    64,
+    512,
+    256
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 0.268435456,
+  "param_m": 0.28672,
+  "modules": [
+   "Conv2d"
+  ],
+  "peak_mem_gb": 0.823328768,
+  "output": [
+   8,
+   128,
+   508,
+   250
+  ],
+  "out_stats": {
+   "mean": -0.00014840986113995314,
+   "std": 0.32912251353263855,
+   "frac_zero": 0.0,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 0.0005062222480773926,
+   "max_rel": 309.1974204873337,
+   "pass_1e-4": false,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0005062222480773926,
+   "max_rel": 309.1974204873337,
+   "pass_1e-4": false,
+   "pass_1e-2": true
+  },
+  "eager_ms": 3.560544013977051,
+  "eager_tf32_ms": 3.4882240295410156,
+  "compile_s": 0.5097208023071289,
+  "compile_ms": 3.792639970779419
+ },
+ {
+  "task": "L1-88",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    8192,
+    8192
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 0.268435456,
+  "param_m": 0.0,
+  "modules": [],
+  "peak_mem_gb": 1.107296256,
+  "output": [
+   8192,
+   8192
+  ],
+  "out_stats": {
+   "mean": 0.3709243834018707,
+   "std": 0.24680976569652557,
+   "frac_zero": 4.470348358154297e-08,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 1.6433919668197632,
+  "eager_tf32_ms": 1.643343985080719,
+  "compile_s": 0.5879685878753662,
+  "compile_ms": 0.2051680013537407
+ },
+ {
+  "task": "L1-89",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    32768,
+    32768
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 4.294967296,
+  "param_m": 0.0,
+  "modules": [],
+  "peak_mem_gb": 8.623489024,
+  "output": [
+   32768,
+   32768
+  ],
+  "out_stats": {
+   "mean": 8192.013671875,
+   "std": 4729.78125,
+   "frac_zero": 0.0,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 4.6960320472717285,
+  "eager_tf32_ms": 4.69700813293457,
+  "compile_s": 0.5430986881256104,
+  "compile_ms": 3.1505120992660522
+ },
+ {
+  "task": "L1-95",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    32768,
+    4096
+   ],
+   [
+    32768
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32",
+   "torch.int64"
+  ],
+  "input_gb": 0.537133056,
+  "param_m": 0.0,
+  "modules": [],
+  "peak_mem_gb": 1.107559424,
+  "output": [],
+  "out_stats": {
+   "mean": 8.358263969421387,
+   "std": 0.0,
+   "frac_zero": 0.0,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 0.49241599440574646,
+  "eager_tf32_ms": 0.49248000979423523,
+  "compile_s": 0.6563506126403809,
+  "compile_ms": 0.26233598589897156
+ },
+ {
+  "task": "L1-97",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    32,
+    32,
+    512,
+    1024
+   ],
+   [
+    32,
+    32,
+    512,
+    1024
+   ],
+   [
+    32,
+    32,
+    512,
+    1024
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32",
+   "torch.float32",
+   "torch.float32"
+  ],
+  "input_gb": 6.442450944,
+  "param_m": 0.0,
+  "modules": [],
+  "peak_mem_gb": 8.623490048,
+  "output": [
+   32,
+   32,
+   512,
+   1024
+  ],
+  "out_stats": {
+   "mean": 0.4999946057796478,
+   "std": 0.012929349206387997,
+   "frac_zero": 0.0,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 24.113056182861328,
+  "eager_tf32_ms": 24.11303997039795,
+  "compile_s": 0.12617754936218262,
+  "compile_ms": 25.50486469268799
+ },
+ {
+  "task": "L1-98",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    16384,
+    16384
+   ],
+   [
+    16384,
+    16384
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32",
+   "torch.float32"
+  ],
+  "input_gb": 2.147483648,
+  "param_m": 0.0,
+  "modules": [],
+  "peak_mem_gb": 6.476005376,
+  "output": [],
+  "out_stats": {
+   "mean": 0.06445654481649399,
+   "std": 0.0,
+   "frac_zero": 0.0,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 1,
+  "tf32_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 3.926591992378235,
+  "eager_tf32_ms": 3.9272799491882324,
+  "compile_s": 0.6077978610992432,
+  "compile_ms": 0.7697759866714478
+ },
+ {
+  "task": "L2-1",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    128,
+    64,
+    128,
+    128
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 0.536870912,
+  "param_m": 0.073984,
+  "modules": [
+   "Conv2d"
+  ],
+  "peak_mem_gb": 2.651620352,
+  "output": [
+   128,
+   128,
+   126,
+   126
+  ],
+  "out_stats": {
+   "mean": 0.08038853108882904,
+   "std": 1.081487774848938,
+   "frac_zero": 3.8444920792391034e-09,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 0.0006154775619506836,
+   "max_rel": 437.0063543319702,
+   "pass_1e-4": false,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0006154775619506836,
+   "max_rel": 437.0063543319702,
+   "pass_1e-4": false,
+   "pass_1e-2": true
+  },
+  "eager_ms": 4.492512226104736,
+  "eager_tf32_ms": 4.4890241622924805,
+  "compile_s": 1.2835092544555664,
+  "compile_ms": 2.002784013748169
+ },
+ {
+  "task": "L2-14",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    1024,
+    8192
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 0.033554432,
+  "param_m": 67.108864,
+  "modules": [],
+  "peak_mem_gb": 0.402653184,
+  "output": [
+   1024,
+   1
+  ],
+  "out_stats": {
+   "mean": 130.76516723632812,
+   "std": 1753.5272216796875,
+   "frac_zero": 0.0,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 2.7451171875,
+   "max_rel": 0.3238383195416932,
+   "pass_1e-4": false,
+   "pass_1e-2": false
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 2.7507200241088867,
+  "eager_tf32_ms": 0.39446398615837097,
+  "compile_s": 0.2228693962097168,
+  "compile_ms": 2.740351915359497,
+  "shortcut_vs_fp32": {
+   "max_abs": 0.0177001953125,
+   "max_rel": 0.003182686187141948,
+   "pass_1e-4": false,
+   "pass_1e-2": true
+  }
+ },
+ {
+  "task": "L2-18",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    1024,
+    8192
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 0.033554432,
+  "param_m": 67.117056,
+  "modules": [
+   "Linear"
+  ],
+  "peak_mem_gb": 0.369135616,
+  "output": [
+   1024,
+   1
+  ],
+  "out_stats": {
+   "mean": 8.747766494750977,
+   "std": 15.033699989318848,
+   "frac_zero": 0.0,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 0.026744842529296875,
+   "max_rel": 1.471143756558237,
+   "pass_1e-4": false,
+   "pass_1e-2": false
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 2.7857120037078857,
+  "eager_tf32_ms": 0.42715200781822205,
+  "compile_s": 0.5870215892791748,
+  "compile_ms": 2.715872049331665,
+  "shortcut_vs_fp32": {
+   "max_abs": 0.0001544952392578125,
+   "max_rel": 0.009022260530655074,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  }
+ },
+ {
+  "task": "L2-23",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    128,
+    3,
+    24,
+    32,
+    32
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 0.037748736,
+  "param_m": 0.002016,
+  "modules": [
+   "Conv3d",
+   "GroupNorm"
+  ],
+  "peak_mem_gb": 0.557950464,
+  "output": [
+   128
+  ],
+  "out_stats": {
+   "mean": -2.44652464953532e-10,
+   "std": 1.1020244272685886e-08,
+   "frac_zero": 0.0,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": false,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 1.594815969467163,
+  "eager_tf32_ms": 1.594815969467163,
+  "compile_s": 1.4441578388214111,
+  "compile_ms": 1.131168007850647
+ },
+ {
+  "task": "L2-30",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    1024,
+    8192
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 0.033554432,
+  "param_m": 67.13344,
+  "modules": [
+   "GroupNorm",
+   "Hardtanh",
+   "Linear"
+  ],
+  "peak_mem_gb": 0.40288256,
+  "output": [
+   1024,
+   8192
+  ],
+  "out_stats": {
+   "mean": 0.0007483841618523002,
+   "std": 0.958246648311615,
+   "frac_zero": 0.0,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 0.0014728307723999023,
+   "max_rel": 430.41917532261033,
+   "pass_1e-4": false,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 2.8328959941864014,
+  "eager_tf32_ms": 0.5012800097465515,
+  "compile_s": 0.5570034980773926,
+  "compile_ms": 2.7267520427703857
+ },
+ {
+  "task": "L2-33",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    1024,
+    8192
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 0.033554432,
+  "param_m": 67.141632,
+  "modules": [
+   "BatchNorm1d",
+   "Linear"
+  ],
+  "peak_mem_gb": 0.40291584,
+  "output": [
+   1024,
+   8192
+  ],
+  "out_stats": {
+   "mean": -1.1859810911118984e-09,
+   "std": 0.9875813722610474,
+   "frac_zero": 0.0,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "train_vs_eval_max_abs": 4.943574953824282,
+  "tf32_vs_fp32": {
+   "max_abs": 0.0023058056831359863,
+   "max_rel": 666.2992867063622,
+   "pass_1e-4": false,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 2.765120029449463,
+  "eager_tf32_ms": 0.4329279959201813,
+  "compile_s": 1.1450722217559814,
+  "compile_ms": 2.75382399559021
+ },
+ {
+  "task": "L2-39",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    16384,
+    4096
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 0.268435456,
+  "param_m": 16.7936,
+  "modules": [
+   "BatchNorm1d",
+   "Linear"
+  ],
+  "peak_mem_gb": 0.910296064,
+  "output": [
+   16384,
+   4096
+  ],
+  "out_stats": {
+   "mean": 2.4647306418046355e-09,
+   "std": 0.9884743690490723,
+   "frac_zero": 8.940696716308594e-08,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "train_vs_eval_max_abs": 5.464977324008942,
+  "tf32_vs_fp32": {
+   "max_abs": 0.0024013519287109375,
+   "max_rel": 1030.0782457369567,
+   "pass_1e-4": false,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 11.367280006408691,
+  "eager_tf32_ms": 2.016703963279724,
+  "compile_s": 0.8644707202911377,
+  "compile_ms": 11.085471630096436
+ },
+ {
+  "task": "L2-41",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    16384,
+    4096
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 0.268435456,
+  "param_m": 16.789504,
+  "modules": [
+   "BatchNorm1d",
+   "Linear"
+  ],
+  "peak_mem_gb": 0.91027968,
+  "output": [
+   16384,
+   4096
+  ],
+  "out_stats": {
+   "mean": 0.3404451608657837,
+   "std": 0.548686683177948,
+   "frac_zero": 0.4999326914548874,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "train_vs_eval_max_abs": 4.843588352203369,
+  "tf32_vs_fp32": {
+   "max_abs": 0.002699136734008789,
+   "max_rel": 645.464169792831,
+   "pass_1e-4": false,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 11.523087978363037,
+  "eager_tf32_ms": 2.1964480876922607,
+  "compile_s": 0.9732606410980225,
+  "compile_ms": 11.106127738952637
+ },
+ {
+  "task": "L2-45",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    16384,
+    2048
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 0.134217728,
+  "param_m": 12.588032,
+  "modules": [
+   "Linear"
+  ],
+  "peak_mem_gb": 0.7549952,
+  "output": [
+   16384
+  ],
+  "out_stats": {
+   "mean": 6.982504367828369,
+   "std": 0.000773708859924227,
+   "frac_zero": 0.0,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 1.2874603271484375e-05,
+   "max_rel": 1.8440802803275223e-06,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 8.521920204162598,
+  "eager_tf32_ms": 1.4928480386734009,
+  "compile_s": 0.7571055889129639,
+  "compile_ms": 8.42080020904541
+ },
+ {
+  "task": "L2-51",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    2048,
+    8192
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 0.067108864,
+  "param_m": 67.125248,
+  "modules": [
+   "Linear"
+  ],
+  "peak_mem_gb": 0.57049088,
+  "output": [
+   2048,
+   8192
+  ],
+  "out_stats": {
+   "mean": 0.5038641691207886,
+   "std": 0.2886466681957245,
+   "frac_zero": 0.0,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 1.7881393432617188e-06,
+   "max_rel": 0.0006276004975731037,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 5.624320030212402,
+  "eager_tf32_ms": 0.9082239866256714,
+  "compile_s": 0.8554539680480957,
+  "compile_ms": 5.467199802398682,
+  "shortcut_vs_fp32": {
+   "max_abs": 1.1920928955078125e-07,
+   "max_rel": 4.179624843304257e-06,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  }
+ },
+ {
+  "task": "L2-55",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    128,
+    32768
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 0.016777216,
+  "param_m": 1073.774592,
+  "modules": [
+   "Linear",
+   "MaxPool1d"
+  ],
+  "peak_mem_gb": 4.387373056,
+  "output": [
+   128
+  ],
+  "out_stats": {
+   "mean": 1536.3536376953125,
+   "std": 9.430347442626953,
+   "frac_zero": 0.0,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 0.1259765625,
+   "max_rel": 8.113054470670364e-05,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 5.323535919189453,
+  "eager_tf32_ms": 1.5077760219573975,
+  "compile_s": 0.7788119316101074,
+  "compile_ms": 5.305311918258667
+ },
+ {
+  "task": "L2-56",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    128,
+    32768
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 0.016777216,
+  "param_m": 1073.774592,
+  "modules": [
+   "Linear"
+  ],
+  "peak_mem_gb": 4.378984448,
+  "output": [
+   128,
+   1
+  ],
+  "out_stats": {
+   "mean": 16381.5390625,
+   "std": 6.800607681274414,
+   "frac_zero": 0.0,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 0.01171875,
+   "max_rel": 7.15175426572343e-07,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 5.2911999225616455,
+  "eager_tf32_ms": 1.4875520467758179,
+  "compile_s": 0.6655876636505127,
+  "compile_ms": 5.256688117980957
+ },
+ {
+  "task": "L2-64",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    1024,
+    8192
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 0.033554432,
+  "param_m": 67.117056,
+  "modules": [
+   "Linear"
+  ],
+  "peak_mem_gb": 0.402694144,
+  "output": [
+   1024,
+   1
+  ],
+  "out_stats": {
+   "mean": 9.068042755126953,
+   "std": 0.0020067852456122637,
+   "frac_zero": 0.0,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 4.76837158203125e-06,
+   "max_rel": 5.256728086277626e-07,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 2.8105119466781616,
+  "eager_tf32_ms": 0.4622400104999542,
+  "compile_s": 1.0414466857910156,
+  "compile_ms": 2.7592320442199707
+ },
+ {
+  "task": "L2-66",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    128,
+    16384
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 0.008388608,
+  "param_m": 268.45184,
+  "modules": [
+   "Dropout",
+   "Linear"
+  ],
+  "peak_mem_gb": 1.134624768,
+  "output": [
+   128,
+   16384
+  ],
+  "out_stats": {
+   "mean": 6.103515625e-05,
+   "std": 2.440914249746129e-05,
+   "frac_zero": 0.0,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.00031435242635780014,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "train_vs_eval_max_abs": 0.00019401554891373962,
+  "tf32_vs_fp32": {
+   "max_abs": 0.00030052945658098906,
+   "max_rel": 6.192971981964393,
+   "pass_1e-4": false,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0002999757562065497,
+   "max_rel": 5.552299037666703,
+   "pass_1e-4": false,
+   "pass_1e-2": true
+  },
+  "eager_ms": 1.4496320486068726,
+  "eager_tf32_ms": 0.4203839898109436,
+  "compile_s": 1.0593042373657227,
+  "compile_ms": 1.475327968597412
+ },
+ {
+  "task": "L2-67",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    128,
+    8,
+    256,
+    256
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 0.268435456,
+  "param_m": 0.004672,
+  "modules": [
+   "Conv2d"
+  ],
+  "peak_mem_gb": 4.530129408,
+  "output": [
+   128,
+   64
+  ],
+  "out_stats": {
+   "mean": 0.028101244941353798,
+   "std": 0.14633387327194214,
+   "frac_zero": 0.0,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 8.557736873626709e-05,
+   "max_rel": 0.010738628711061514,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 8.557736873626709e-05,
+   "max_rel": 0.010738628711061514,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 6.562528133392334,
+  "eager_tf32_ms": 6.510591983795166,
+  "compile_s": 0.7782301902770996,
+  "compile_ms": 2.6788480281829834
+ },
+ {
+  "task": "L2-73",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    128,
+    8,
+    128,
+    128
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 0.067108864,
+  "param_m": 0.0048,
+  "modules": [
+   "BatchNorm2d",
+   "Conv2d"
+  ],
+  "peak_mem_gb": 1.14113536,
+  "output": [
+   128,
+   64,
+   126,
+   126
+  ],
+  "out_stats": {
+   "mean": -2.2965584989265153e-08,
+   "std": 1.9996308088302612,
+   "frac_zero": 3.075593663391283e-08,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "train_vs_eval_max_abs": 9.630114793777466,
+  "tf32_vs_fp32": {
+   "max_abs": 0.004729973152279854,
+   "max_rel": 2102.7302534122327,
+   "pass_1e-4": false,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.004729973152279854,
+   "max_rel": 2102.7302534122327,
+   "pass_1e-4": false,
+   "pass_1e-2": true
+  },
+  "eager_ms": 2.5656321048736572,
+  "eager_tf32_ms": 2.5545599460601807,
+  "compile_s": 2.004863977432251,
+  "compile_ms": 1.0731679797172546
+ },
+ {
+  "task": "L2-76",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    1024,
+    8192
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 0.033554432,
+  "param_m": 67.117056,
+  "modules": [
+   "Linear"
+  ],
+  "peak_mem_gb": 0.402685952,
+  "output": [
+   1024,
+   8192
+  ],
+  "out_stats": {
+   "mean": 0.4156532883644104,
+   "std": 0.6150074005126953,
+   "frac_zero": 0.5082266330718994,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 0.00048172473907470703,
+   "max_rel": 199.25832748413086,
+   "pass_1e-4": false,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 2.7674560546875,
+  "eager_tf32_ms": 0.41412800550460815,
+  "compile_s": 0.29396557807922363,
+  "compile_ms": 2.788831949234009
+ },
+ {
+  "task": "L2-80",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    1024,
+    8192
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 0.033554432,
+  "param_m": 67.117056,
+  "modules": [
+   "Linear"
+  ],
+  "peak_mem_gb": 0.369143808,
+  "output": [
+   1024,
+   1
+  ],
+  "out_stats": {
+   "mean": 0.0,
+   "std": 0.0,
+   "frac_zero": 1.0,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": false,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 2.7321600914001465,
+  "eager_tf32_ms": 0.39028801023960114,
+  "compile_s": 0.5135819911956787,
+  "compile_ms": 2.7182719707489014
+ },
+ {
+  "task": "L2-83",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    128,
+    3,
+    16,
+    64,
+    64
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 0.100663296,
+  "param_m": 0.001344,
+  "modules": [
+   "Conv3d",
+   "Dropout",
+   "GroupNorm"
+  ],
+  "peak_mem_gb": 1.126161408,
+  "output": [
+   128,
+   16,
+   14,
+   62,
+   62
+  ],
+  "out_stats": {
+   "mean": 0.0,
+   "std": 0.0,
+   "frac_zero": 1.0,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": false,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "train_vs_eval_max_abs": 0.0,
+  "tf32_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 4.577216148376465,
+  "eager_tf32_ms": 4.575615882873535,
+  "compile_s": 1.3022127151489258,
+  "compile_ms": 3.394495964050293
+ },
+ {
+  "task": "L2-84",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    1024,
+    8192
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 0.033554432,
+  "param_m": 67.133441,
+  "modules": [
+   "BatchNorm1d",
+   "Linear",
+   "Softmax"
+  ],
+  "peak_mem_gb": 0.402883584,
+  "output": [
+   1024,
+   8192
+  ],
+  "out_stats": {
+   "mean": 0.0001220703125,
+   "std": 0.0001593756169313565,
+   "frac_zero": 0.0,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "train_vs_eval_max_abs": 0.014393281890079379,
+  "tf32_vs_fp32": {
+   "max_abs": 9.881332516670227e-06,
+   "max_rel": 0.0023196065527329507,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 2.8073920011520386,
+  "eager_tf32_ms": 0.47513599693775177,
+  "compile_s": 1.1698501110076904,
+  "compile_ms": 2.80350399017334
+ },
+ {
+  "task": "L2-86",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    1024,
+    8192
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 0.033554432,
+  "param_m": 67.117056,
+  "modules": [
+   "Linear"
+  ],
+  "peak_mem_gb": 0.402685952,
+  "output": [
+   1024,
+   8192
+  ],
+  "out_stats": {
+   "mean": 0.0005014968337491155,
+   "std": 0.016766564920544624,
+   "frac_zero": 0.0,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 2.532266080379486e-05,
+   "max_rel": 15.98902309751793,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 2.753664016723633,
+  "eager_tf32_ms": 0.4041920006275177,
+  "compile_s": 0.7001643180847168,
+  "compile_ms": 2.7320640087127686
+ },
+ {
+  "task": "L2-88",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    1024,
+    8192
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 0.033554432,
+  "param_m": 67.141632,
+  "modules": [
+   "GroupNorm",
+   "Linear"
+  ],
+  "peak_mem_gb": 0.436338688,
+  "output": [
+   1024,
+   8192
+  ],
+  "out_stats": {
+   "mean": 0.0630202367901802,
+   "std": 0.35396668314933777,
+   "frac_zero": 0.0,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 0.003349781036376953,
+   "max_rel": 205.00070417028837,
+   "pass_1e-4": false,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 3.0467519760131836,
+  "eager_tf32_ms": 0.6907839775085449,
+  "compile_s": 1.4972081184387207,
+  "compile_ms": 2.727871894836426
+ },
+ {
+  "task": "L2-95",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    1024,
+    8192
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 0.033554432,
+  "param_m": 67.125248,
+  "modules": [
+   "Linear"
+  ],
+  "peak_mem_gb": 0.436273152,
+  "output": [
+   1024,
+   8192
+  ],
+  "out_stats": {
+   "mean": 0.13131961226463318,
+   "std": 0.27777257561683655,
+   "frac_zero": 1.1920928955078125e-07,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 0.00024262070655822754,
+   "max_rel": 60.07893062435217,
+   "pass_1e-4": false,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 2.863424062728882,
+  "eager_tf32_ms": 0.5037760138511658,
+  "compile_s": 0.6341965198516846,
+  "compile_ms": 2.7379519939422607
+ },
+ {
+  "task": "L2-97",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    1024,
+    8192
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 0.033554432,
+  "param_m": 67.133441,
+  "modules": [
+   "BatchNorm1d",
+   "Linear"
+  ],
+  "peak_mem_gb": 0.43637248,
+  "output": [
+   1024,
+   8192
+  ],
+  "out_stats": {
+   "mean": 0.2584240138530731,
+   "std": 0.5907652378082275,
+   "frac_zero": 0.0,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "train_vs_eval_max_abs": 4.817531108856201,
+  "tf32_vs_fp32": {
+   "max_abs": 0.002346515655517578,
+   "max_rel": 697.8350573660919,
+   "pass_1e-4": false,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 2.8718719482421875,
+  "eager_tf32_ms": 0.523360013961792,
+  "compile_s": 0.6954123973846436,
+  "compile_ms": 2.787168025970459
+ },
+ {
+  "task": "L2-99",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    1024,
+    8192
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 0.033554432,
+  "param_m": 67.117056,
+  "modules": [
+   "Linear"
+  ],
+  "peak_mem_gb": 0.402685952,
+  "output": [
+   1024,
+   8192
+  ],
+  "out_stats": {
+   "mean": 0.0001220703125,
+   "std": 2.4569735614932142e-05,
+   "frac_zero": 0.0,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 1.7284764908254147e-07,
+   "max_rel": 0.00042288204692162817,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 2.76963210105896,
+  "eager_tf32_ms": 0.41305598616600037,
+  "compile_s": 1.5341410636901855,
+  "compile_ms": 2.7574079036712646
+ },
+ {
+  "task": "C-1",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    1024,
+    8192
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 0.033554432,
+  "param_m": 67.117056,
+  "modules": [
+   "Linear"
+  ],
+  "peak_mem_gb": 0.402685952,
+  "output": [
+   1024,
+   1
+  ],
+  "out_stats": {
+   "mean": 11.499347686767578,
+   "std": 0.41499724984169006,
+   "frac_zero": 0.0,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 0.001483917236328125,
+   "max_rel": 0.00010494158881025913,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 2.772736072540283,
+  "eager_tf32_ms": 0.4238719940185547,
+  "compile_s": 1.2524831295013428,
+  "compile_ms": 2.733344078063965
+ },
+ {
+  "task": "C-2",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    1024,
+    8192
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 0.033554432,
+  "param_m": 67.117056,
+  "modules": [
+   "Linear"
+  ],
+  "peak_mem_gb": 0.402685952,
+  "output": [
+   1024,
+   8192
+  ],
+  "out_stats": {
+   "mean": 6.104180647525936e-05,
+   "std": 2.0990082703065127e-05,
+   "frac_zero": 0.0,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 8.492497727274895e-08,
+   "max_rel": 0.0004957505233597233,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 2.7688639163970947,
+  "eager_tf32_ms": 0.4270719885826111,
+  "compile_s": 1.249312400817871,
+  "compile_ms": 2.7419838905334473
+ },
+ {
+  "task": "C-3",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    1024,
+    8192
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 0.033554432,
+  "param_m": 67.117056,
+  "modules": [
+   "Linear"
+  ],
+  "peak_mem_gb": 0.436240384,
+  "output": [
+   1024,
+   8192
+  ],
+  "out_stats": {
+   "mean": 0.18259602785110474,
+   "std": 0.6230132579803467,
+   "frac_zero": 0.0,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 0.0038688182830810547,
+   "max_rel": 174.59644743373596,
+   "pass_1e-4": false,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 2.8440160751342773,
+  "eager_tf32_ms": 0.4799039959907532,
+  "compile_s": 0.7633984088897705,
+  "compile_ms": 2.7815200090408325
+ },
+ {
+  "task": "C-4",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    1000,
+    8000
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 0.032,
+  "param_m": 48.006,
+  "modules": [
+   "Linear"
+  ],
+  "peak_mem_gb": 0.305578496,
+  "output": [
+   1000,
+   6000
+  ],
+  "out_stats": {
+   "mean": 0.26200878620147705,
+   "std": 0.6588818430900574,
+   "frac_zero": 0.0,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 0.00047981739044189453,
+   "max_rel": 134.47902819052615,
+   "pass_1e-4": false,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 2.003391981124878,
+  "eager_tf32_ms": 0.319023996591568,
+  "compile_s": 0.47055840492248535,
+  "compile_ms": 2.0287680625915527
+ }
+]

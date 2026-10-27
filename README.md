@@ -18,6 +18,7 @@ uv run ruff check .         # lint
 uv run ruff format .        # format
 uv run modal setup          # one-time Modal login
 uv run modal run src/triton_kernel_agent/modal_hello.py   # which GPU do we get?
+uv run modal run src/triton_kernel_agent/modal_tasks.py   # re-measure tasks/metadata.json
 ```
 
 Settings live in two places:
@@ -27,3 +28,22 @@ Settings live in two places:
 
 Every model call is appended to `traces/model_calls.jsonl` with its token
 counts and dollar cost. Prices live in `src/triton_kernel_agent/pricing.py`.
+
+## Tasks
+
+The task list is decided in `decisions/tasks_chosen.md` (Y2) and recorded in
+`tasks/manifest.toml`: 43 scored tasks (12 dev, 31 held-out) plus two unscored canaries.
+
+- `tasks/kernelbench/`: the chosen KernelBench sources, vendored unchanged from commit `423217d`.
+- `tasks/custom/`: our own tasks C-1 to C-4, in KernelBench format.
+- `tasks/metadata.json`: per-task shapes, bytes and FLOPs per forward call, measured on an H100.
+
+```python
+from triton_kernel_agent.tasks import load_tasks
+
+dev = load_tasks(split="dev")          # 12 tasks; split="held_out" gives 31, None gives all 43
+task = dev[0]
+task.id, task.source, task.atol, task.bytes, task.flops
+```
+
+`scripts/y2_screen/` holds the Y2 screening script and its raw results.
