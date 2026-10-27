@@ -19,8 +19,10 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
+    "numpy>=2.4.6",
     "pytest>=9.1.1",
     "ruff>=0.17.2",
+    "torch>=2.14.1",
 ]
 
 [tool.ruff]
