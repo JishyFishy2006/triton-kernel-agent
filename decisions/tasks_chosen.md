@@ -95,6 +95,10 @@ Dev: L1-1, L1-9, L1-19, L1-25, L1-36, L1-42, L1-47, L2-1, L2-30, L2-56, L2-76, L
    candidate against an fp64 run; accept when the candidate's error is at most a small multiple of
    the fp32 reference's own error, with an absolute floor. A fixed 1e-4 rejects exact algebra
    (the L2-14 shortcut is off by 0.018); a fixed 1e-2 lets TF32 through on 20 of 21 tasks. (B5)
+   *Amended in B5 (2026-10-27):* the multiple is 8x and the floor is 16 fp32 ulps of the output's
+   largest magnitude, not an absolute 1e-4. On an H100, torch.compile stayed within 1.1x of the
+   reference's error on every hidden case, while an absolute 1e-4 floor let TF32 (50-300x) through
+   on tasks with small outputs such as L2-86, L2-99 and L2-64.
 3. **Algebraic shortcuts count as correct**, but are reported as their own result category and
    kept out of the speedup medians. (B5, reporting)
 4. **L1-12 stays in the 43** as a canary: scored for correctness, left out of fast_p.

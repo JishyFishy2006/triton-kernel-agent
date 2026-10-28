@@ -6,6 +6,7 @@ import math
 import pytest
 
 from triton_kernel_agent.correctness import (
+    FLOOR_ULPS,
     REF_ERR_MULTIPLE,
     Case,
     check,
@@ -136,11 +137,36 @@ def test_exact_algebraic_shortcut_passes():
     assert result.passed, result.message
 
 
-def test_exact_ops_are_held_to_the_absolute_floor():
+def test_exact_ops_are_held_to_a_floor_of_a_few_ulps():
     relu = nn.ReLU()
     result = run(lambda ref, x: torch.clamp(x, min=0), ref=relu)
-    assert result.passed and result.ref_err == 0.0 and result.allowed_err == ATOL
-    assert run(lambda ref, x: torch.clamp(x, min=0) + 2e-4, ref=relu).status == Status.MISMATCH
+    assert result.passed and result.ref_err == 0.0
+    torch.manual_seed(1)
+    biggest = torch.randn(64, 512).clamp(min=0).max().item()  # same input as run()
+    eps = torch.finfo(torch.float32).eps
+    assert result.allowed_err == pytest.approx(FLOOR_ULPS * eps * biggest)
+    assert run(lambda ref, x: torch.clamp(x, min=0) + 1e-5, ref=relu).status == Status.MISMATCH
+
+
+def test_floor_scales_with_the_output():
+    # The same small absolute error is fine on huge outputs, wrong on tiny ones.
+    torch.manual_seed(3)
+    ref = torch.randn(1000, dtype=torch.float64)
+    for scale, ok in ((1e4, True), (1.0, False)):
+        truth = ref * scale
+        check = compare((truth + 5e-5).float(), truth.float(), truth, ATOL, RTOL)
+        assert check.passed is ok, scale
+
+
+def test_tiny_outputs_are_not_hidden_by_an_absolute_atol():
+    # L2-99-like: softmax outputs around 1e-4. A 1e-4 atol would accept anything; TF32 must fail.
+    torch.manual_seed(4)
+    logits = torch.randn(32, 4096, dtype=torch.float64)
+    truth = torch.softmax(logits, dim=1)
+    ref32 = torch.softmax(logits.float(), dim=1)
+    tf32ish = torch.softmax(round_to_tf32(logits.float()), dim=1)
+    assert compare(ref32.clone(), ref32, truth, ATOL, RTOL).passed
+    assert compare(tf32ish, ref32, truth, ATOL, RTOL).status == Status.MISMATCH
 
 
 def test_nonfinite_where_the_reference_is_nonfinite_is_fine():

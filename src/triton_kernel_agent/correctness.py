@@ -4,7 +4,9 @@ Rules decided in Y2 (decisions/tasks_chosen.md):
 - Strict IEEE fp32: the reference and the candidate both run with TF32 off (decision 1).
 - Tolerance is relative to an fp64 run of the reference (decision 2). The candidate passes when
   its worst error against fp64 is at most REF_ERR_MULTIPLE times the fp32 reference's own worst
-  error, or at most the dtype's atol (the floor for ops the reference computes exactly).
+  error, or at most FLOOR_ULPS ulps of the output's largest magnitude (the floor for ops the
+  reference computes exactly). The floor scales with the output, unlike a fixed atol: on an H100
+  a fixed 1e-4 floor let TF32 through on L2-86, L2-99 and L2-64 at 100x the reference's error.
   If the fp64 run is impossible (out of memory), fall back to allclose against the fp32
   reference at the task's atol/rtol, as KernelBench does.
 - Models stay in training mode, as KernelBench runs them; nothing here calls .eval().
@@ -23,8 +25,10 @@ from typing import Any
 from triton_kernel_agent.harness_result import ERROR_EXCERPT_CHARS, ShapeClass, Status
 
 # How much worse than the fp32 reference (both measured against fp64) a candidate may be.
-# Different summation orders land within ~1-4x; TF32 lands 100x+ out on GEMMs.
+# torch.compile lands at 0.4-1.1x on every hidden case of every task; TF32 at 50-300x.
 REF_ERR_MULTIPLE = 8.0
+# Floor for outputs the reference computes (nearly) exactly: this many ulps of max |output|.
+FLOOR_ULPS = 16
 # Elements per chunk when computing errors in float64, so multi-GB outputs fit in memory.
 _CHUNK = 1 << 26
 
@@ -137,6 +141,18 @@ def _max_abs(a, b) -> float:
     return worst
 
 
+def _max_magnitude(t) -> float:
+    """max |t| over finite elements, chunked."""
+    import torch
+
+    worst = 0.0
+    for x in _chunks(t):
+        x = x[torch.isfinite(x)].abs()
+        if x.numel():
+            worst = max(worst, x.max().item())
+    return worst
+
+
 def _nonfinite_problem(candidate, truth) -> Status | None:
     """Where truth is finite the candidate must be too; where it isn't they must agree."""
     import torch
@@ -184,12 +200,13 @@ def compare(candidate, ref32, ref64=None, atol=1e-4, rtol=1e-4, hidden=True) -> 
     err = _max_abs(candidate, truth)
     if ref64 is not None:
         ref_err = _max_abs(ref32, ref64)
-        allowed = max(REF_ERR_MULTIPLE * ref_err, atol)
+        floor = FLOOR_ULPS * torch.finfo(ref32.dtype).eps * _max_magnitude(ref64)
+        allowed = max(REF_ERR_MULTIPLE * ref_err, floor)
         if err <= allowed:
             return CaseCheck(None, err, allowed, ref_err, "fp64_relative")
         msg = (
             f"max abs error {err:.3g} vs fp64; allowed {allowed:.3g} ({REF_ERR_MULTIPLE:g}x "
-            f"the fp32 reference's own error {ref_err:.3g}, floor {atol:g})"
+            f"the fp32 reference's own error {ref_err:.3g}, floor {floor:.3g})"
         )
         return CaseCheck(Status.MISMATCH, err, allowed, ref_err, "fp64_relative", msg)
 
