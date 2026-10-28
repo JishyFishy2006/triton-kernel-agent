@@ -25,10 +25,12 @@ from typing import Any
 from triton_kernel_agent.harness_result import ERROR_EXCERPT_CHARS, ShapeClass, Status
 
 # How much worse than the fp32 reference (both measured against fp64) a candidate may be.
-# torch.compile lands at 0.4-1.1x on every hidden case of every task; TF32 at 50-300x.
+# On an H100, torch.compile stays within 2.6x on every hidden case of every task; TF32 lands
+# 6-300x out (caught on 146 of the 149 cases where it changes the output).
 REF_ERR_MULTIPLE = 8.0
 # Floor for outputs the reference computes (nearly) exactly: this many ulps of max |output|.
-FLOOR_ULPS = 16
+# 16 ulps let TF32 through on L2-45 and L2-56; torch.compile uses at most 21% of 4 ulps.
+FLOOR_ULPS = 4
 # Elements per chunk when computing errors in float64, so multi-GB outputs fit in memory.
 _CHUNK = 1 << 26
 
