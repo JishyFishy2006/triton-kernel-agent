@@ -25,10 +25,12 @@ def expected(path: Path) -> set[CheatFlag]:
 
 ALL = sorted(FIXTURES.glob("*.py"))
 OK = [p for p in ALL if p.name.startswith("ok_")]
-CHEATS = [p for p in ALL if p.name.startswith("cheat_") and expected(p)]
+CHEATS = [p for p in ALL if expected(p)]
+# Real kernels, plus runtime cheats (rt_*) that are written to get past the static scan.
+STATICALLY_CLEAN = [p for p in ALL if not expected(p)]
 
 
-@pytest.mark.parametrize("path", OK, ids=lambda p: p.stem)
+@pytest.mark.parametrize("path", STATICALLY_CLEAN, ids=lambda p: p.stem)
 def test_real_triton_kernels_pass(path):
     report = scan(path.read_text())
     assert report.clean, report.summary()
