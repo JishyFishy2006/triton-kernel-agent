@@ -53,6 +53,7 @@ class CheatFlag(StrEnum):
     INPUT_INSENSITIVE = "input_insensitive"  # output did not change when the input did
     OUTPUT_ALIASES_INPUT = "output_aliases_input"  # output shares memory with an input
     HARNESS_TAMPERED = "harness_tampered"  # timers, checks or TF32 flags changed by the run
+    CHANGED_AFTER_CHECKS = "changed_after_checks"  # wrong output after benchmarking (B9)
 
     @property
     def is_static(self) -> bool:
