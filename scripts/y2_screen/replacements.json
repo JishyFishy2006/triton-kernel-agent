@@ -1,0 +1,301 @@
+[
+ {
+  "task": "L2-6",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    128,
+    3,
+    16,
+    32,
+    32
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 0.025165824,
+  "param_m": 0.001312,
+  "modules": [
+   "Conv3d",
+   "MaxPool3d"
+  ],
+  "peak_mem_gb": 0.231610368,
+  "output": [
+   128,
+   16,
+   3,
+   7,
+   7
+  ],
+  "out_stats": {
+   "mean": 0.08975689858198166,
+   "std": 0.03076113946735859,
+   "frac_zero": 0.0,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 1.0944960117340088,
+  "eager_tf32_ms": 1.094815969467163,
+  "compile_s": 5.281463861465454,
+  "compile_ms": 0.7387199997901917
+ },
+ {
+  "task": "L2-24",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    128,
+    3,
+    24,
+    32,
+    32
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 0.037748736,
+  "param_m": 0.001968,
+  "modules": [
+   "Conv3d"
+  ],
+  "peak_mem_gb": 0.315187712,
+  "output": [
+   128,
+   24,
+   30,
+   30
+  ],
+  "out_stats": {
+   "mean": 0.0416666679084301,
+   "std": 0.013134385459125042,
+   "frac_zero": 0.0,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 1.2881920337677002,
+  "eager_tf32_ms": 1.2879999876022339,
+  "compile_s": 5.0313942432403564,
+  "compile_ms": 1.045520007610321
+ },
+ {
+  "task": "L2-27",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    1024,
+    3,
+    16,
+    32,
+    32
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 0.201326592,
+  "param_m": 0.00312,
+  "modules": [
+   "Conv3d",
+   "GroupNorm"
+  ],
+  "peak_mem_gb": 1.635956224,
+  "output": [
+   1024,
+   16
+  ],
+  "out_stats": {
+   "mean": -8.694769348949194e-10,
+   "std": 0.7629711627960205,
+   "frac_zero": 0.0,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 10.240960121154785,
+  "eager_tf32_ms": 10.238271713256836,
+  "compile_s": 5.957493305206299,
+  "compile_ms": 8.41427230834961
+ },
+ {
+  "task": "L2-43",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    4,
+    32,
+    32,
+    128,
+    128
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 0.268435456,
+  "param_m": 0.05536,
+  "modules": [
+   "Conv3d",
+   "MaxPool3d"
+  ],
+  "peak_mem_gb": 1.006854656,
+  "output": [
+   4,
+   1,
+   16,
+   64,
+   64
+  ],
+  "out_stats": {
+   "mean": 4.466368675231934,
+   "std": 0.014119337312877178,
+   "frac_zero": 0.0,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 5.5789947509765625e-05,
+   "max_rel": 1.250707665362795e-05,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 5.5789947509765625e-05,
+   "max_rel": 1.250707665362795e-05,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 2.52508807182312,
+  "eager_tf32_ms": 2.5092320442199707,
+  "compile_s": 5.850212097167969,
+  "compile_ms": 2.4539198875427246
+ },
+ {
+  "task": "L2-79",
+  "torch": "2.14.1+cu130",
+  "default_flags": {
+   "matmul_tf32": false,
+   "cudnn_tf32": true
+  },
+  "inputs": [
+   [
+    128,
+    3,
+    16,
+    32,
+    32
+   ]
+  ],
+  "input_dtypes": [
+   "torch.float32"
+  ],
+  "input_gb": 0.025165824,
+  "param_m": 0.001328,
+  "modules": [
+   "Conv3d",
+   "InstanceNorm3d"
+  ],
+  "peak_mem_gb": 0.231627264,
+  "output": [
+   128,
+   14,
+   30,
+   30
+  ],
+  "out_stats": {
+   "mean": 1.2952661514282227,
+   "std": 0.5725882649421692,
+   "frac_zero": 0.0,
+   "nonfinite": 0
+  },
+  "nondeterministic_max_abs": 0.0,
+  "input_sensitive": true,
+  "identity_under_rand": false,
+  "identity_under_randn": false,
+  "randn_nonfinite": 0,
+  "tf32_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "kb_default_vs_fp32": {
+   "max_abs": 0.0,
+   "max_rel": 0.0,
+   "pass_1e-4": true,
+   "pass_1e-2": true
+  },
+  "eager_ms": 1.1696959733963013,
+  "eager_tf32_ms": 1.1695839762687683,
+  "compile_s": 5.402733325958252,
+  "compile_ms": 0.708736002445221
+ }
+]

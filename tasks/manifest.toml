@@ -1,0 +1,269 @@
+# The task list decided in Y2: see decisions/tasks_chosen.md for the reasoning.
+#
+# id:        L<level>-<problem number> (KernelBench at kernelbench_commit) or C-<n> (tasks/custom).
+# group:     what kind of op it is, for reporting.
+# split:     "dev" (tune prompts on these) or "held_out" (report results on these).
+# role:      "scored" (default) or "canary" (unscored; run on every harness version, no split).
+# in_fast_p: false keeps a scored task out of fast_p (default true).
+# dtype:     defaults to [defaults].dtype; tolerances come from the dtype.
+
+kernelbench_commit = "423217d9fda91e0c2d67e4a43bf62f96f6d104f1"
+
+[defaults]
+dtype = "float32"
+
+# Paper tasks
+
+[[task]]
+id = "L1-12"
+group = "Paper"
+split = "held_out"
+in_fast_p = false
+note = "0.08 ms eager: timing noise is too large for fast_p"
+
+[[task]]
+id = "L1-88"
+group = "Paper"
+split = "held_out"
+
+[[task]]
+id = "L1-54"
+group = "Paper"
+split = "held_out"
+
+[[task]]
+id = "L1-56"
+group = "Paper"
+split = "held_out"
+
+[[task]]
+id = "L2-14"
+group = "Paper"
+split = "held_out"
+note = "Collapses to a matrix-vector product"
+
+[[task]]
+id = "L2-73"
+group = "Paper"
+split = "held_out"
+note = "BatchNorm in training mode"
+
+[[task]]
+id = "L2-27"
+group = "Paper"
+split = "held_out"
+note = "Replaces L2-23"
+
+# Elementwise
+
+[[task]]
+id = "L1-19"
+group = "Elementwise"
+split = "dev"
+note = "Identity under rand inputs"
+
+[[task]]
+id = "L1-25"
+group = "Elementwise"
+split = "dev"
+
+[[task]]
+id = "L1-29"
+group = "Elementwise"
+split = "held_out"
+
+# Reduction / norm
+
+[[task]]
+id = "L1-23"
+group = "Reduction / norm"
+split = "held_out"
+
+[[task]]
+id = "L1-35"
+group = "Reduction / norm"
+split = "held_out"
+
+[[task]]
+id = "L1-36"
+group = "Reduction / norm"
+split = "dev"
+
+[[task]]
+id = "L1-40"
+group = "Reduction / norm"
+split = "held_out"
+
+[[task]]
+id = "L1-47"
+group = "Reduction / norm"
+split = "dev"
+
+[[task]]
+id = "L1-51"
+group = "Reduction / norm"
+split = "held_out"
+
+[[task]]
+id = "L1-89"
+group = "Reduction / norm"
+split = "held_out"
+
+# Matmul
+
+[[task]]
+id = "L1-1"
+group = "Matmul"
+split = "dev"
+
+[[task]]
+id = "L1-3"
+group = "Matmul"
+split = "held_out"
+
+[[task]]
+id = "L1-7"
+group = "Matmul"
+split = "held_out"
+
+[[task]]
+id = "L1-8"
+group = "Matmul"
+split = "held_out"
+
+[[task]]
+id = "L1-9"
+group = "Matmul"
+split = "dev"
+
+[[task]]
+id = "L1-14"
+group = "Matmul"
+split = "held_out"
+
+# Pool / loss / attention
+
+[[task]]
+id = "L1-42"
+group = "Pool / loss / attention"
+split = "dev"
+
+[[task]]
+id = "L1-95"
+group = "Pool / loss / attention"
+split = "held_out"
+
+[[task]]
+id = "L1-98"
+group = "Pool / loss / attention"
+split = "held_out"
+note = "Needs probability-valued inputs"
+
+[[task]]
+id = "L1-97"
+group = "Pool / loss / attention"
+split = "held_out"
+note = "Stretch: head dim 1024"
+
+# Level 2 GEMM chains
+
+[[task]]
+id = "L2-76"
+group = "L2 GEMM chain"
+split = "dev"
+
+[[task]]
+id = "L2-86"
+group = "L2 GEMM chain"
+split = "dev"
+
+[[task]]
+id = "L2-95"
+group = "L2 GEMM chain"
+split = "held_out"
+
+[[task]]
+id = "L2-56"
+group = "L2 GEMM chain"
+split = "dev"
+
+[[task]]
+id = "L2-55"
+group = "L2 GEMM chain"
+split = "held_out"
+
+[[task]]
+id = "L2-99"
+group = "L2 GEMM chain"
+split = "held_out"
+
+[[task]]
+id = "L2-30"
+group = "L2 GEMM chain"
+split = "dev"
+
+[[task]]
+id = "L2-88"
+group = "L2 GEMM chain"
+split = "held_out"
+
+[[task]]
+id = "L2-45"
+group = "L2 GEMM chain"
+split = "held_out"
+
+[[task]]
+id = "L2-64"
+group = "L2 GEMM chain"
+split = "held_out"
+
+# Level 2 conv chains
+
+[[task]]
+id = "L2-1"
+group = "L2 conv chain"
+split = "dev"
+
+[[task]]
+id = "L2-67"
+group = "L2 conv chain"
+split = "held_out"
+
+# Own tasks (tasks/custom), Level 2 style
+
+[[task]]
+id = "C-1"
+group = "Own"
+split = "held_out"
+note = "Rewrite of L2-18"
+
+[[task]]
+id = "C-2"
+group = "Own"
+split = "held_out"
+note = "L2-99 reordered"
+
+[[task]]
+id = "C-3"
+group = "Own"
+split = "held_out"
+
+[[task]]
+id = "C-4"
+group = "Own"
+split = "held_out"
+note = "Odd shapes: 1000 x 8000 x 6000"
+
+# Unscored canaries
+
+[[task]]
+id = "L2-23"
+group = "Canary"
+role = "canary"
+note = "Output is 0 +/- 1e-8 for any input: return zeros must fail"
+
+[[task]]
+id = "L2-80"
+group = "Canary"
+role = "canary"
+note = "Output is always zero"
