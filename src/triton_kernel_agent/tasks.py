@@ -19,6 +19,7 @@ METADATA_PATH = TASKS_DIR / "metadata.json"
 
 SPLITS = ("dev", "held_out")
 ROLES = ("scored", "canary")
+INPUT_DOMAINS = ("any", "fixed")
 # (atol, rtol) per dtype, from the tech spec. B5 decides how these combine with the
 # fp64-relative rule accepted in Y2; here they are just the per-task numbers.
 TOLERANCES = {
@@ -46,6 +47,8 @@ class Task:
     # Per forward call, measured on GPU. None until tasks/metadata.json has the task.
     bytes: int | None = None  # inputs + parameters + buffers + outputs, each touched once
     flops: int | None = None  # matmul/conv/attention FLOPs (FlopCounterMode); 0 if elementwise
+    # "fixed": hidden cases keep get_inputs()'s distribution (L1-98 needs probabilities).
+    input_domain: str = "any"
     note: str = ""
 
     @property
@@ -86,6 +89,10 @@ def _task(raw: dict[str, Any], defaults: dict[str, Any], tasks_dir: Path) -> Tas
         raise ValueError(f"{task_id}: dtype must be one of {tuple(TOLERANCES)}, got {dtype!r}")
     atol, rtol = TOLERANCES[dtype]
 
+    input_domain = raw.get("input_domain", "any")
+    if input_domain not in INPUT_DOMAINS:
+        raise ValueError(f"{task_id}: input_domain must be one of {INPUT_DOMAINS}")
+
     return Task(
         id=task_id,
         level=level,
@@ -98,6 +105,7 @@ def _task(raw: dict[str, Any], defaults: dict[str, Any], tasks_dir: Path) -> Tas
         dtype=dtype,
         atol=atol,
         rtol=rtol,
+        input_domain=input_domain,
         note=raw.get("note", ""),
     )
 
