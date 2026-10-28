@@ -270,3 +270,24 @@ def test_strict_fp32_turns_tf32_off_and_restores_it():
         assert torch.backends.cudnn.allow_tf32
     finally:
         torch.backends.cuda.matmul.allow_tf32, torch.backends.cudnn.allow_tf32 = before
+
+
+def test_reference_runs_in_strict_fp32_even_if_the_candidate_turns_tf32_on():
+    seen = []
+
+    class Spy(nn.Module):
+        def forward(self, x):
+            seen.append(torch.backends.cuda.matmul.allow_tf32)
+            return x * 2
+
+    def sneaky(ref, x):
+        torch.backends.cuda.matmul.allow_tf32 = True
+        return x * 2
+
+    before = torch.backends.cuda.matmul.allow_tf32
+    try:
+        run_case(Spy(), Candidate(None, sneaky), Case([torch.randn(4, 4)], ShapeClass.SIZE_ONE),
+                 ATOL, RTOL)  # fmt: skip
+        assert seen and not any(seen)
+    finally:
+        torch.backends.cuda.matmul.allow_tf32 = before
