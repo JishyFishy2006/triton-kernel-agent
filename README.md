@@ -41,7 +41,7 @@ The task list is decided in `decisions/tasks_chosen.md` (Y2) and recorded in
 ```python
 from triton_kernel_agent.tasks import load_tasks
 
-dev = load_tasks(split="dev")          # 12 tasks; split="held_out" gives 31, None gives all 43
+dev = load_tasks(split="dev")  # 12 tasks; split="held_out" gives 31, None gives all 43
 task = dev[0]
 task.id, task.source, task.atol, task.bytes, task.flops
 ```
