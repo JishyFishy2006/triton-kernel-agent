@@ -19,6 +19,7 @@ uv run ruff format .        # format
 uv run modal setup          # one-time Modal login
 uv run modal run src/triton_kernel_agent/modal_hello.py   # which GPU do we get?
 uv run modal run src/triton_kernel_agent/modal_tasks.py   # re-measure tasks/metadata.json
+uv run modal run src/triton_kernel_agent/modal_check.py   # correctness checker on hidden cases
 ```
 
 Settings live in two places:
@@ -47,3 +48,11 @@ task.id, task.source, task.atol, task.bytes, task.flops
 ```
 
 `scripts/y2_screen/` holds the Y2 screening script and its raw results.
+
+## Harness
+
+- `harness_result.py`: the one result every eval returns (`docs/harness_result.md`).
+- `correctness.py` (B5): strict fp32; the candidate's error vs an fp64 reference may be at most
+  8x the fp32 reference's own error, with a floor of 4 ulps of the output's largest value.
+- `hidden_shapes.py` (B6): at least 5 seeded hidden cases per task (non-power-of-2, size 1,
+  varied batch, one large case under 1 GiB, randn and shifted inputs).

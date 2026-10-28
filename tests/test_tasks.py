@@ -80,6 +80,7 @@ def _manifest(tmp_path, body: str):
         ('[[task]]\nid = "L1-2"\ngroup = "g"\nsplit = "dev"\n', "expected one file"),
         ('[[task]]\nid = "L3-1"\ngroup = "g"\nsplit = "dev"\n', "bad task id"),
         ('[[task]]\nid = "L1-1"\ngroup = "g"\nsplit = "dev"\ndtype = "int8"\n', "dtype"),
+        ('[[task]]\nid = "L1-1"\ngroup = "g"\nsplit = "dev"\ninput_domain = "x"\n', "input_domain"),
     ],
 )
 def test_bad_manifest_raises(tmp_path, body, match):

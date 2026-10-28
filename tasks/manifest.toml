@@ -6,6 +6,8 @@
 # role:      "scored" (default) or "canary" (unscored; run on every harness version, no split).
 # in_fast_p: false keeps a scored task out of fast_p (default true).
 # dtype:     defaults to [defaults].dtype; tolerances come from the dtype.
+# input_domain: "any" (default) lets hidden cases redraw float inputs (randn, shifted);
+#            "fixed" keeps get_inputs()'s distribution for inputs with a constrained domain.
 
 kernelbench_commit = "423217d9fda91e0c2d67e4a43bf62f96f6d104f1"
 
@@ -157,6 +159,7 @@ split = "held_out"
 id = "L1-98"
 group = "Pool / loss / attention"
 split = "held_out"
+input_domain = "fixed"
 note = "Needs probability-valued inputs"
 
 [[task]]
