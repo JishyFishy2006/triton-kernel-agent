@@ -35,6 +35,8 @@ RESULT_PREFIX = "HARNESS_RESULT"
 # Progress lines, so a runner whose process died knows whether a hidden case was running
 # (and must then redact the crash text, which can contain sizes).
 STAGE_PREFIX = "HARNESS_STAGE"
+# Text that marks a Triton compile failure inside a launch-time exception.
+COMPILE_MARKERS = ("CompilationError", "ptxas", "PTXASError", "PTX assembly")
 
 
 @dataclass(frozen=True)
@@ -191,8 +193,10 @@ def _failed(req: EvalRequest, clock: _Clock, result) -> HarnessResult:
     # Which kind of case failed, so feedback can redact a crash on a hidden one (B15).
     hidden = result.failing_shape_class != ShapeClass.VISIBLE
     fields["extra"] = {**fields["extra"], "case": "hidden" if hidden else "visible"}
-    # Triton compile errors surface on the first launch; report them as compile errors.
-    if fields["status"] == Status.RUNTIME_ERROR and "CompilationError" in fields["error_excerpt"]:
+    # Triton compiles on the first launch, so its errors arrive as runtime errors: front end
+    # (CompilationError) or PTX assembly (ptxas). Report them as compile errors (to the fixer).
+    excerpt = fields["error_excerpt"]
+    if fields["status"] == Status.RUNTIME_ERROR and any(m in excerpt for m in COMPILE_MARKERS):
         fields["status"] = Status.COMPILE_ERROR
     return _result(req, clock, **fields)
 
