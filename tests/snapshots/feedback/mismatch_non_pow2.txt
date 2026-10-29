@@ -1,0 +1,4 @@
+The output values are wrong (max abs error 0.0412) on hidden inputs whose sizes are not powers of 2 and not multiples of your block sizes: mask every load and store, and handle partial tiles at every edge.
+
+Details:
+max abs error 0.0412 vs fp64; row <n> of <n> differs

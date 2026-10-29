@@ -1,0 +1,4 @@
+The output has the wrong shape or dtype on hidden inputs with a dimension of size 1: check reductions, strides and grid sizes when a dimension collapses.
+
+Details:
+output is 1-D torch.float32, expected 2-D torch.float32

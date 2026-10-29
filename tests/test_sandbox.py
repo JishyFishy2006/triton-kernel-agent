@@ -62,3 +62,16 @@ def test_static_cheats_stop_before_anything_runs():
 def test_requests_round_trip_through_json():
     req = request("pass")
     assert EvalRequest.from_dict(json.loads(json.dumps(req.__dict__))) == req
+
+
+def test_crash_text_from_a_hidden_case_is_redacted():
+    from triton_kernel_agent.harness import STAGE_PREFIX
+
+    stdout = f"{STAGE_PREFIX}:n:visible\n{STAGE_PREFIX}:n:hidden\n"
+    stderr = "AssertionError: offset 1237 >= 2913"
+    r = result_from_process("L1-8", "n", 1, stdout, stderr, seconds=3.0, timeout_s=300)
+    assert r.extra["case"] == "hidden"
+    assert "1237" not in r.error_excerpt and "<n>" in r.error_excerpt
+    # A fake stage line without the nonce does not count.
+    r = result_from_process("L1-8", "n", 1, f"{STAGE_PREFIX}:x:visible", stderr, 3.0, 300)
+    assert r.extra["case"] == "visible" and "1237" in r.error_excerpt

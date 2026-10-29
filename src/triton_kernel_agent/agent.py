@@ -15,6 +15,7 @@ from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from typing import Literal, Protocol
 
+from triton_kernel_agent.feedback import format_feedback
 from triton_kernel_agent.harness_result import HarnessResult, Status
 from triton_kernel_agent.prompts import (
     KernelResponse,
@@ -86,11 +87,6 @@ class TaskOutcome:
         return max(correct, key=lambda a: a.speedup) if correct else None
 
 
-def default_feedback(result: HarnessResult) -> str:
-    """Placeholder; B15's feedback.format_feedback replaces it."""
-    return f"{result.status}: {result.error_excerpt}".strip()
-
-
 def _next_role(attempts: Sequence[AttemptRecord]) -> Role:
     if not attempts:
         return "planner"
@@ -127,7 +123,7 @@ def run_task(
     evaluator: Evaluator,
     budget: Budget,
     *,
-    feedback: Callable[[HarnessResult], str] = default_feedback,
+    feedback: Callable[[HarnessResult], str] = format_feedback,
     on_attempt: Callable[[AttemptRecord], None] | None = None,
     previous: Sequence[AttemptRecord] = (),
 ) -> TaskOutcome:

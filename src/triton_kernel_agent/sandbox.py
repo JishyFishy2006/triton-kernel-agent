@@ -18,7 +18,8 @@ from typing import Any
 
 import modal
 
-from triton_kernel_agent.harness import RESULT_PREFIX, EvalRequest
+from triton_kernel_agent.correctness import _redact
+from triton_kernel_agent.harness import RESULT_PREFIX, STAGE_PREFIX, EvalRequest
 from triton_kernel_agent.harness_result import ERROR_EXCERPT_CHARS, HarnessResult, Status
 from triton_kernel_agent.tasks import Task
 
@@ -38,6 +39,13 @@ def parse_output(stdout: str, nonce: str) -> HarnessResult | None:
     return None
 
 
+def last_stage(stdout: str, nonce: str) -> str | None:
+    """The last stage the harness announced ('visible', 'hidden'), or None."""
+    tag = f"{STAGE_PREFIX}:{nonce}:"
+    stages = [line[len(tag) :] for line in stdout.splitlines() if line.startswith(tag)]
+    return stages[-1] if stages else None
+
+
 def result_from_process(
     task_id: str, nonce: str, returncode: int, stdout: str, stderr: str, seconds: float,
     timeout_s: float,
@@ -46,14 +54,20 @@ def result_from_process(
     parsed = parse_output(stdout, nonce)
     if parsed is not None:
         return parsed
+    # Died without a result. If a hidden case was running, its sizes must not reach the agent.
+    stage = last_stage(stdout, nonce)
+    case = {"case": "hidden" if stage == "hidden" else "visible", "stage": stage}
     if returncode in TIMEOUT_EXIT_CODES or seconds >= timeout_s:
         msg = f"killed after {timeout_s:g} s wall-clock limit"
-        return HarnessResult(task_id, Status.TIMEOUT, error_excerpt=msg, gpu_seconds=seconds)
-    # The process died without a result: a crash in the candidate (e.g. illegal memory access).
+        return HarnessResult(task_id, Status.TIMEOUT, error_excerpt=msg, gpu_seconds=seconds,
+                             extra=case)  # fmt: skip
+    # A crash in the candidate (e.g. illegal memory access).
     tail = (stderr or stdout)[-ERROR_EXCERPT_CHARS:]
+    if stage == "hidden":
+        tail = _redact(tail)
     msg = f"process exited with code {returncode} before reporting a result\n{tail}"
     return HarnessResult(task_id, Status.RUNTIME_ERROR, error_excerpt=msg[-ERROR_EXCERPT_CHARS:],
-                         gpu_seconds=seconds)  # fmt: skip
+                         gpu_seconds=seconds, extra=case)  # fmt: skip
 
 
 class SandboxRunner:
