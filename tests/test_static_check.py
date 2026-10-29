@@ -152,3 +152,18 @@ def test_findings_carry_lines_and_syntax_errors_raise():
     assert "line 4" in report.summary()
     with pytest.raises(SyntaxError):
         scan("def broken(:\n")
+
+
+def test_autotune_config_lists_are_not_hardcoded_data():
+    # Regression: a real muse-wonder L2-76 reply had 8 triton.Config entries (72 numbers).
+    configs = ",\n".join(
+        f"    triton.Config({{'BLOCK_M': {m}, 'BLOCK_N': {n}, 'BLOCK_K': 32, 'GROUP_M': 8}}, "
+        f"num_warps={w}, num_stages={st})"
+        for m, n, w, st in [(128, 256, 8, 3), (256, 128, 8, 3), (128, 128, 4, 4), (64, 256, 4, 4),
+                            (128, 64, 4, 4), (64, 128, 4, 4), (64, 64, 4, 5), (32, 64, 2, 5)]
+    )  # fmt: skip
+    source = f"import triton\nCONFIGS = [\n{configs}\n]\n"
+    assert scan(source).clean, scan(source).summary()
+    # The same numbers as a bare table are still data.
+    table = "T = [" + ", ".join(f"({i}, {i + 1}, -{i + 2})" for i in range(30)) + "]"
+    assert CheatFlag.HARDCODED_DATA in flags_of(table)
