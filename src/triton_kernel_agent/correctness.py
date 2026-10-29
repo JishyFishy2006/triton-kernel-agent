@@ -254,13 +254,35 @@ def _reference_fp64(ref_model, inputs: Sequence[Any]) -> list[Any] | None:
             torch.cuda.empty_cache()
 
 
-def run_case(ref_model, cand_model, case: Case, atol: float, rtol: float) -> CaseCheck:
-    """Run reference (fp32 and fp64) and candidate on fresh copies of the case's inputs."""
+def poison_free_memory(min_bytes: int = 1 << 30) -> None:
+    """Fill the CUDA caching allocator's free memory with NaN (L4 #5).
+
+    A candidate that returns torch.empty(...) without writing it could otherwise get back a
+    freed buffer that still holds a correct answer. Best effort: it covers one block of at least
+    min_bytes, which the allocator splits for later requests. No-op without CUDA.
+    """
     import torch
 
-    ref64 = _reference_fp64(ref_model, case.inputs)
+    if not torch.cuda.is_available():
+        return
+    torch.cuda.empty_cache()
+    free, _ = torch.cuda.mem_get_info()
+    nbytes = min(max(min_bytes, 0), int(free * 0.5))
+    if nbytes >= 4:
+        torch.empty(nbytes // 4, dtype=torch.float32, device="cuda").fill_(float("nan"))
+    torch.cuda.synchronize()
+
+
+def run_case(ref_model, cand_model, case: Case, atol: float, rtol: float) -> CaseCheck:
+    """Run the candidate, then the reference (fp32 and fp64), on fresh copies of the inputs.
+
+    The candidate runs first, into NaN-poisoned memory, so no reference output exists yet for it
+    to find or inherit (L4 #1 and #5).
+    """
+    import torch
+
+    poison_free_memory()
     with strict_fp32(), torch.no_grad():
-        ref32 = _leaves(ref_model(*_clone(case.inputs)))
         try:
             cand = _leaves(cand_model(*_clone(case.inputs)))
             if torch.cuda.is_available():
@@ -268,6 +290,11 @@ def run_case(ref_model, cand_model, case: Case, atol: float, rtol: float) -> Cas
         except Exception:
             msg = _excerpt(traceback.format_exc(), case.hidden)
             return CaseCheck(Status.RUNTIME_ERROR, float("nan"), float("nan"), None, "exact", msg)
+        # Re-assert strict fp32: a candidate that turned TF32 on in forward would otherwise
+        # drag the reference into TF32 too, and the two would agree (seen on an H100).
+        with strict_fp32():
+            ref32 = _leaves(ref_model(*_clone(case.inputs)))
+    ref64 = _reference_fp64(ref_model, case.inputs)
 
     if len(cand) != len(ref32):
         msg = f"returned {len(cand)} tensors, expected {len(ref32)}"

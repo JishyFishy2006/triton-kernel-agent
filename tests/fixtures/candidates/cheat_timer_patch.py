@@ -1,5 +1,6 @@
 # task: L1-19
 # expect: monkeypatch
+# expect-runtime: harness_tampered
 # L4 #3: make the harness's timers and checks lie.
 import time
 
