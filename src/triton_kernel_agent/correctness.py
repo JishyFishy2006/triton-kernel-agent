@@ -25,9 +25,10 @@ from typing import Any
 from triton_kernel_agent.harness_result import ERROR_EXCERPT_CHARS, ShapeClass, Status
 
 # How much worse than the fp32 reference (both measured against fp64) a candidate may be.
-# On an H100, torch.compile stays within 2.6x on every hidden case of every task; TF32 lands
-# 6-300x out (caught on 146 of the 149 cases where it changes the output).
-REF_ERR_MULTIPLE = 8.0
+# An honest Triton GEMM that accumulates over K = 8192 in order lands at 9.6x cuBLAS's error
+# (L2-76 on an H100), so 8x rejected it; torch.compile stays within 2.6x. TF32 lands at a
+# median 190x: 16x still catches it on 141 of the 149 hidden cases where it changes the output.
+REF_ERR_MULTIPLE = 16.0
 # Floor for outputs the reference computes (nearly) exactly: this many ulps of max |output|.
 # 16 ulps let TF32 through on L2-45 and L2-56; torch.compile uses at most 21% of 4 ulps.
 FLOOR_ULPS = 4

@@ -100,6 +100,9 @@ Dev: L1-1, L1-9, L1-19, L1-25, L1-36, L1-42, L1-47, L2-1, L2-30, L2-56, L2-76, L
    reference's error on every hidden case of every task, while an absolute 1e-4 floor let TF32
    (50-300x) through on tasks with small outputs such as L2-86, L2-99 and L2-64. With the new
    floor TF32 is caught on 146 of the 149 hidden cases where it changes the output.
+   *Amended in B11 (2026-10-29):* the multiple is 16x. A correct Triton GEMM that accumulates
+   over K = 8192 in order (L2-76, visible size) has 9.6x cuBLAS's error and failed at 8x. At
+   16x TF32 is still caught on 141 of 149 cases; the static tl.dot check is its main defence.
 3. **Algebraic shortcuts count as correct**, but are reported as their own result category and
    kept out of the speedup medians. (B5, reporting)
 4. **L1-12 stays in the 43** as a canary: scored for correctness, left out of fast_p.
