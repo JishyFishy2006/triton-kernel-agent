@@ -65,6 +65,7 @@ orchestrator, not the harness.
 | `input_insensitive` | runtime | Output did not change when the input did, even in the same buffer (L4 #4) |
 | `output_aliases_input` | runtime | Output shares memory with an input (L4 #5) |
 | `harness_tampered` | runtime | Timers, checks or TF32 flags differ after the candidate ran (L4 #3) |
+| `changed_after_checks` | runtime | The output after benchmarking is wrong: it behaved only while checked (B9) |
 
 `static_cheat` carries only static flags. `runtime_cheat` carries at least one runtime flag;
 it may also carry static ones.
