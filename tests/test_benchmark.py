@@ -63,3 +63,15 @@ def test_compile_baseline_is_timed_separately():
     assert result.timing.compile_ms == 1.5
     assert result.timing.speedup_compile == pytest.approx(1.5)
     assert result.extra["compile_s"] > 0
+
+
+def test_cached_baselines_skip_eager_and_compile_timing():
+    torch.manual_seed(0)
+    x = torch.randn(64, 64)
+    cached = {"eager_runs_ms": [3.0, 3.0, 3.0], "compile_runs_ms": [2.0, 2.0, 2.0]}
+    result = benchmark(
+        Double(), CountingCandidate(), [x], 1e-4, 1e-4, timer=fake_timer([[1.0, 1.0, 1.0]]),
+        baselines=cached,
+    )  # fmt: skip
+    assert (result.timing.eager_ms, result.timing.compile_ms, result.timing.kernel_ms) == (3, 2, 1)
+    assert result.extra["baselines_cached"] and result.extra["compile_runs_ms"] == [2.0] * 3
