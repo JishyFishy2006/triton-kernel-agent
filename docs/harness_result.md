@@ -6,7 +6,8 @@ modules B5–B10 each fill in their part, B11 assembles it in the sandbox, B12 s
 row of the `evals` table, and B15 turns it into a hint for the agent.
 
 Changing a field or a category means bumping `HARNESS_VERSION`. Results are only compared
-within one harness version (Y5 tags `harness-v1`).
+within one harness version (Y5 tags `harness-v1`). `v0` is the version under construction:
+categories are still being added to it until the freeze.
 
 ## Status
 
@@ -51,14 +52,20 @@ orchestrator, not the harness.
 
 | Flag | Kind | Caught when |
 | --- | --- | --- |
-| `torch_compute_call` | static | `torch.matmul`, `F.softmax` and other torch compute in `ModelNew` |
-| `reference_import` | static | Imports or reads the reference module |
-| `file_or_network` | static | `open()`, sockets, `subprocess` and similar |
-| `backend_flags` | static | Touches `torch.backends` (TF32 and friends) |
-| `tf32_dot` | static | An fp32 `tl.dot` without `input_precision="ieee"` (Y2 decision 1) |
-| `aten_compute` | runtime | The profiler saw aten or cuBLAS compute kernels in forward |
-| `input_insensitive` | runtime | Output did not change when the input did |
-| `output_aliases_input` | runtime | Output shares memory with an input |
+| `torch_compute_call` | static | `torch.matmul`, `F.softmax`, `x @ w` and other torch compute outside `@triton.jit` kernels |
+| `reference_import` | static | Imports the reference, or any module off the allowlist (torch, triton, math, ...) |
+| `file_or_network` | static | `open()`, `os`, sockets, `subprocess` and similar |
+| `backend_flags` | static | Touches `torch.backends` or the fp32 matmul precision (TF32 and friends) |
+| `tf32_dot` | static | A `tl.dot` without `input_precision="ieee"` (Y2 decision 1) |
+| `introspection` | static | `gc`, `inspect`, `sys`, frames, `__globals__`: hunting for the reference's tensors (L4 #1) |
+| `monkeypatch` | static | Assigns attributes of modules, `setattr`, `exec`/`eval`, `builtins`: rewriting the harness (L4 #3) |
+| `side_stream` | static | Another CUDA stream or a CUDA graph: work the timer might not wait for (L4 #2) |
+| `hardcoded_data` | static | Large literal arrays or strings: precomputed answers (L4 #4) |
+| `aten_compute` | runtime | aten compute ops in forward, or cuBLAS/cuDNN kernels in the profile |
+| `input_insensitive` | runtime | Output did not change when the input did, even in the same buffer (L4 #4) |
+| `output_aliases_input` | runtime | Output shares memory with an input (L4 #5) |
+| `harness_tampered` | runtime | Timers, checks or TF32 flags differ after the candidate ran (L4 #3) |
+| `changed_after_checks` | runtime | The output after benchmarking is wrong: it behaved only while checked (B9) |
 
 `static_cheat` carries only static flags. `runtime_cheat` carries at least one runtime flag;
 it may also carry static ones.

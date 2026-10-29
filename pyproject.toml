@@ -29,8 +29,9 @@ dev = [
 [tool.ruff]
 line-length = 100
 target-version = "py311"
-# Vendored upstream sources stay byte-identical to the pinned commit.
-extend-exclude = ["tasks/kernelbench"]
+# Vendored upstream sources stay byte-identical to the pinned commit; candidate fixtures
+# are deliberately bad code (cheats) and are kept as an agent would write them.
+extend-exclude = ["tasks/kernelbench", "tests/fixtures/candidates"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "SIM"]

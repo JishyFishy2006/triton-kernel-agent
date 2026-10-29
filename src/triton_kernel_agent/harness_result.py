@@ -11,7 +11,8 @@ from dataclasses import asdict, dataclass, field
 from enum import StrEnum
 from typing import Any
 
-# Results are only compared within one harness version (Y5 tags harness-v1).
+# Results are only compared within one harness version (Y5 tags harness-v1). v0 is the
+# version under construction; bump on every change to fields or categories from v1 on.
 HARNESS_VERSION = "v0"
 # Error text sent back is cut to this many characters, keeping the end (where tracebacks point).
 ERROR_EXCERPT_CHARS = 2000
@@ -38,15 +39,21 @@ class Status(StrEnum):
 
 class CheatFlag(StrEnum):
     # Static (B7): found in the source before it runs.
-    TORCH_COMPUTE_CALL = "torch_compute_call"  # torch.matmul, F.softmax, ... in ModelNew
-    REFERENCE_IMPORT = "reference_import"  # imports or reads the reference module
+    TORCH_COMPUTE_CALL = "torch_compute_call"  # torch.matmul, F.softmax, x @ w, ... outside kernels
+    REFERENCE_IMPORT = "reference_import"  # imports the reference, or anything off the allowlist
     FILE_OR_NETWORK = "file_or_network"  # open(), sockets, subprocess, ...
     BACKEND_FLAGS = "backend_flags"  # touches torch.backends (TF32 and friends)
-    TF32_DOT = "tf32_dot"  # fp32 tl.dot without input_precision="ieee" (Y2 decision 1)
+    TF32_DOT = "tf32_dot"  # tl.dot without input_precision="ieee" (Y2 decision 1)
+    INTROSPECTION = "introspection"  # gc, inspect, frames, __globals__: hunting the reference
+    MONKEYPATCH = "monkeypatch"  # assigns module attributes, setattr, exec/eval, builtins
+    SIDE_STREAM = "side_stream"  # launches on another CUDA stream or a CUDA graph
+    HARDCODED_DATA = "hardcoded_data"  # large literal arrays or blobs: precomputed answers
     # Runtime (B8): seen while it runs.
-    ATEN_COMPUTE = "aten_compute"  # profiler saw aten/cuBLAS compute kernels in forward
+    ATEN_COMPUTE = "aten_compute"  # aten compute ops, or cuBLAS/cuDNN kernels, in forward
     INPUT_INSENSITIVE = "input_insensitive"  # output did not change when the input did
     OUTPUT_ALIASES_INPUT = "output_aliases_input"  # output shares memory with an input
+    HARNESS_TAMPERED = "harness_tampered"  # timers, checks or TF32 flags changed by the run
+    CHANGED_AFTER_CHECKS = "changed_after_checks"  # wrong output after benchmarking (B9)
 
     @property
     def is_static(self) -> bool:
@@ -60,6 +67,10 @@ _STATIC_FLAGS = frozenset(
         CheatFlag.FILE_OR_NETWORK,
         CheatFlag.BACKEND_FLAGS,
         CheatFlag.TF32_DOT,
+        CheatFlag.INTROSPECTION,
+        CheatFlag.MONKEYPATCH,
+        CheatFlag.SIDE_STREAM,
+        CheatFlag.HARDCODED_DATA,
     }
 )
 
