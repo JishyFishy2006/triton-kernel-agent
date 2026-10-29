@@ -56,5 +56,8 @@ task.id, task.source, task.atol, task.bytes, task.flops
   8x the fp32 reference's own error, with a floor of 4 ulps of the output's largest value.
 - `db.py` (B12): DuckDB file (`data/results.duckdb`) with tasks, runs, attempts and evals;
   one eval row per HarnessResult, speedups as columns.
+- `roofline.py` (B10): achieved bandwidth and fp32 FLOP rate as a percentage of H100 peak, from
+  the task's bytes and FLOPs; `modal_ncu.py` adds opt-in Nsight Compute profiles
+  (`decisions/ncu_on_modal.md`).
 - `hidden_shapes.py` (B6): at least 5 seeded hidden cases per task (non-power-of-2, size 1,
   varied batch, one large case under 1 GiB, randn and shifted inputs).
