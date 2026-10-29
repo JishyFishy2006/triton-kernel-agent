@@ -28,6 +28,8 @@ gpu = "H100!"
 # Wall-clock limit per candidate eval in the sandbox. A task's first eval also compiles and
 # times the eager/torch.compile baselines on the visible (largest) shapes.
 eval_timeout_s = 300
+# For cost per correct kernel (B18). Modal's H100 list price; check modal.com/pricing.
+gpu_usd_per_hour = 3.95
 
 [paths]
 # Relative paths resolve against this file's directory.
