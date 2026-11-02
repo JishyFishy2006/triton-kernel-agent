@@ -1,0 +1,2 @@
+Rejected while running: these checks failed.
+- The output was wrong after benchmarking: the kernel must compute the same correct result on every call.

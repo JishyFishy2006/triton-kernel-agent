@@ -1,0 +1,3 @@
+Rejected while running: these checks failed.
+- The output did not change when the input values changed: do not cache results between calls.
+- The output shares memory with an input: allocate a new output tensor and never write into the inputs.

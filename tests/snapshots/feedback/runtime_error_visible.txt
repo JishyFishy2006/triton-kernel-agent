@@ -1,0 +1,4 @@
+Your code crashed while running. Common causes: out-of-bounds loads or stores (mask them), wrong strides in pointer arithmetic, or a grid that does not match the data.
+
+Details:
+File "candidate.py", line 42: IndexError: index 8205 is out of bounds

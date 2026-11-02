@@ -1,0 +1,3 @@
+Correct on every test. Kernel 5.100 ms vs PyTorch eager 4.300 ms (0.84x) and torch.compile 4.310 ms (0.85x).
+It reaches 76% of peak memory bandwidth; the task is memory-bound.
+Make it faster than eager without breaking correctness: fuse operations to avoid extra passes over memory, pick block sizes (or @triton.autotune) for the bound resource, and keep loads coalesced.

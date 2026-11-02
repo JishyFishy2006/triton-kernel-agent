@@ -1,0 +1,4 @@
+The output values are wrong (max abs error 3.5) on a large hidden input: watch for int32 overflow in pointer offsets (cast to int64) and for grid limits.
+
+Details:
+max abs error 3.5 vs fp64

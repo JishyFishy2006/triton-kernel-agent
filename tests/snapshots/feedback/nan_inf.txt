@@ -1,0 +1,4 @@
+The output has NaN or Inf where the reference is finite on hidden inputs from a different distribution (negative, wider and shifted values): do not assume positive or small inputs; keep exp/log/softmax numerically stable.
+
+Details:
+output has NaN or Inf where the reference is finite

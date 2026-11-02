@@ -1,0 +1,7 @@
+Rejected before running: the code breaks these rules.
+- Every tl.dot must pass input_precision="ieee" (strict fp32).
+- PyTorch computes part of the result outside your Triton kernels. Do all math in @triton.jit kernels; the wrapper may only allocate, reshape and launch.
+
+Details:
+line 30: [torch_compute_call] calls torch.matmul outside a Triton kernel
+line 14: [tf32_dot] tl.dot needs input_precision="ieee" (strict fp32)

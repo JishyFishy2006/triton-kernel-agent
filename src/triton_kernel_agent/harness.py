@@ -32,6 +32,9 @@ from triton_kernel_agent.harness_result import (
 )
 
 RESULT_PREFIX = "HARNESS_RESULT"
+# Progress lines, so a runner whose process died knows whether a hidden case was running
+# (and must then redact the crash text, which can contain sizes).
+STAGE_PREFIX = "HARNESS_STAGE"
 
 
 @dataclass(frozen=True)
@@ -81,6 +84,12 @@ def evaluate(req: EvalRequest) -> HarnessResult:
         return _result(req, clock, Status.HARNESS_ERROR, error_excerpt=excerpt)
 
 
+def _stage(req: EvalRequest, name: str) -> None:
+    """Announce the stage about to run: 'visible' or 'hidden' while candidate code runs."""
+    sys.stdout.write(f"\n{STAGE_PREFIX}:{req.nonce}:{name}\n")
+    sys.stdout.flush()
+
+
 def _evaluate(req: EvalRequest, clock: _Clock) -> HarnessResult:
     from triton_kernel_agent.static_check import scan
 
@@ -125,11 +134,13 @@ def _evaluate(req: EvalRequest, clock: _Clock) -> HarnessResult:
         return _result(
             req, clock, Status.RUNTIME_ERROR, error_excerpt=_tail(traceback.format_exc())
         )
+    _stage(req, "visible")
     visible_check = check(ref, cand, [Case(inputs, ShapeClass.VISIBLE, hidden=False)],
                           req.atol, req.rtol)  # fmt: skip
     if not visible_check.passed:
         return _failed(req, clock, visible_check)
     max_err = visible_check.max_err
+    _stage(req, "hidden")
     for case in hidden:
         h_ref, h_init, h_inputs = build_case(req.task_source, case, "cuda")
         result = check(h_ref, candidate(h_init), [Case(h_inputs, case.shape_class)],
@@ -155,6 +166,7 @@ def _evaluate(req: EvalRequest, clock: _Clock) -> HarnessResult:
     del r_ref, r_inputs, fresh
 
     # 6-7. benchmark on the visible inputs (fresh candidate instance), then roofline.
+    _stage(req, "visible")
     from triton_kernel_agent.benchmark import benchmark
     from triton_kernel_agent.roofline import peak_for, roofline
 
@@ -176,6 +188,9 @@ def _evaluate(req: EvalRequest, clock: _Clock) -> HarnessResult:
 
 def _failed(req: EvalRequest, clock: _Clock, result) -> HarnessResult:
     fields = result.harness_fields()
+    # Which kind of case failed, so feedback can redact a crash on a hidden one (B15).
+    hidden = result.failing_shape_class != ShapeClass.VISIBLE
+    fields["extra"] = {**fields["extra"], "case": "hidden" if hidden else "visible"}
     # Triton compile errors surface on the first launch; report them as compile errors.
     if fields["status"] == Status.RUNTIME_ERROR and "CompilationError" in fields["error_excerpt"]:
         fields["status"] = Status.COMPILE_ERROR
