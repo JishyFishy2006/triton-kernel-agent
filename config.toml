@@ -25,7 +25,9 @@ max_usd_per_task = 3.0
 # "H100!" stops Modal from silently upgrading to an H200, which would skew benchmarks.
 # Modal H100s are all SXM.
 gpu = "H100!"
-eval_timeout_s = 120
+# Wall-clock limit per candidate eval in the sandbox. A task's first eval also compiles and
+# times the eager/torch.compile baselines on the visible (largest) shapes.
+eval_timeout_s = 300
 
 [paths]
 # Relative paths resolve against this file's directory.

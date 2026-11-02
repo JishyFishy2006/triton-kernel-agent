@@ -68,11 +68,14 @@ def benchmark(
     rtol: float,
     compile_baseline: bool = True,
     timer: Callable[[Callable[[], Any]], list[float]] = bench,
+    baselines: dict[str, list[float] | None] | None = None,
 ) -> BenchResult:
     """Time candidate, eager and torch.compile on the same inputs; then re-check the candidate.
 
     The candidate has already passed correctness (B5) and the runtime checks (B8).
-    `timer` is swappable for tests without a GPU.
+    `timer` is swappable for tests without a GPU. `baselines` ({"eager_runs_ms",
+    "compile_runs_ms"} from an earlier result's extra) skips re-timing eager and compile: they
+    do not change between attempts on a task, and compiling can take tens of seconds.
     """
     import torch
 
@@ -81,8 +84,13 @@ def benchmark(
     ref64 = _reference_fp64(ref_model, inputs)
 
     with strict_fp32(), torch.no_grad():
-        eager_runs = timer(lambda: ref_model(*inputs))
-        compile_runs, compile_s = eager_runs, 0.0
+        if baselines and baselines.get("eager_runs_ms"):
+            eager_runs = baselines["eager_runs_ms"]
+            compile_runs = baselines.get("compile_runs_ms") or eager_runs
+            compile_baseline, compile_s = False, 0.0
+        else:
+            eager_runs = timer(lambda: ref_model(*inputs))
+            compile_runs, compile_s = eager_runs, 0.0
         if compile_baseline:
             compiled = torch.compile(ref_model)
             start = time.perf_counter()
@@ -103,7 +111,8 @@ def benchmark(
     extra = {
         "kernel_runs_ms": kernel_runs,
         "eager_runs_ms": eager_runs,
-        "compile_runs_ms": compile_runs if compile_baseline else None,
+        "compile_runs_ms": compile_runs if compile_baseline or baselines else None,
+        "baselines_cached": bool(baselines and baselines.get("eager_runs_ms")),
         "compile_s": compile_s,
         "repeats": len(kernel_runs),
     }

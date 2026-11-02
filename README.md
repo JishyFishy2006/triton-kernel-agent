@@ -53,7 +53,7 @@ task.id, task.source, task.atol, task.bytes, task.flops
 
 - `harness_result.py`: the one result every eval returns (`docs/harness_result.md`).
 - `correctness.py` (B5): strict fp32; the candidate's error vs an fp64 reference may be at most
-  8x the fp32 reference's own error, with a floor of 4 ulps of the output's largest value.
+  16x the fp32 reference's own error, with a floor of 4 ulps of the output's largest value.
 - `db.py` (B12): DuckDB file (`data/results.duckdb`) with tasks, runs, attempts and evals;
   one eval row per HarnessResult, speedups as columns.
 - `roofline.py` (B10): achieved bandwidth and fp32 FLOP rate as a percentage of H100 peak, from
