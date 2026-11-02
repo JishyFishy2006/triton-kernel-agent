@@ -20,6 +20,7 @@ uv run modal setup          # one-time Modal login
 uv run modal run src/triton_kernel_agent/modal_hello.py   # which GPU do we get?
 uv run modal run src/triton_kernel_agent/modal_tasks.py   # re-measure tasks/metadata.json
 uv run modal run src/triton_kernel_agent/modal_check.py   # correctness checker on hidden cases
+uv run python -m triton_kernel_agent.report               # results DB -> site/index.html
 ```
 
 Settings live in two places:

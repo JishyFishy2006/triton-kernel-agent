@@ -18,3 +18,6 @@ traces/
 
 # OS
 .DS_Store
+
+# Generated report (python -m triton_kernel_agent.report)
+site/
