@@ -5,6 +5,17 @@ harness on Modal H100s checks correctness, blocks cheating, and benchmarks speed
 
 Roadmap and tech spec: https://claude.ai/artifact/7JoEkyFCszJkHTs5SF1Tdr
 
+## Running the agent
+
+```sh
+uv run tka demo L1-19                 # one task end to end, with a live view of each attempt
+uv run tka run --split dev --workers 4   # batch run (resume with --run-id <id>)
+uv run tka report                     # results DB -> site/index.html
+```
+
+`--setup spark_only|wonder_only|wonder_spark` picks the model setup (default from
+`config.toml`). Every attempt, its code and its harness result go to `data/results.duckdb`.
+
 ## Development
 
 Requires [uv](https://docs.astral.sh/uv/) and Python 3.11.
