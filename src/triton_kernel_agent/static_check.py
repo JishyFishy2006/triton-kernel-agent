@@ -377,10 +377,14 @@ class _Scanner(ast.NodeVisitor):
             self.flag(CheatFlag.HARDCODED_DATA, node, f"literal with {numbers} numbers")
 
     def visit_List(self, node: ast.List) -> None:
-        # Count numbers once, at the outermost literal; still scan the children for calls.
-        if not self.in_literal:
+        # Data is a literal made only of numbers (nested lists/tuples of them): an answer table.
+        # A list of triton.Config(...) calls has as many numbers but is configuration.
+        # Count once, at the outermost data literal; always scan children for calls.
+        data = _is_numeric_data(node)
+        if data and not self.in_literal:
             self.check_literal(node)
-        was, self.in_literal = self.in_literal, True
+        was = self.in_literal
+        self.in_literal = was or data
         self.generic_visit(node)
         self.in_literal = was
 
@@ -389,6 +393,16 @@ class _Scanner(ast.NodeVisitor):
     def visit_Constant(self, node: ast.Constant) -> None:
         if isinstance(node.value, str | bytes) and len(node.value) > MAX_STRING_CHARS:
             self.flag(CheatFlag.HARDCODED_DATA, node, f"literal of {len(node.value)} characters")
+
+
+def _is_numeric_data(node: ast.AST) -> bool:
+    if isinstance(node, ast.Constant):
+        return isinstance(node.value, int | float | complex) and not isinstance(node.value, bool)
+    if isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.USub | ast.UAdd):
+        return _is_numeric_data(node.operand)
+    if isinstance(node, ast.List | ast.Tuple | ast.Set):
+        return bool(node.elts) and all(_is_numeric_data(e) for e in node.elts)
+    return False
 
 
 def scan(source: str) -> StaticReport:
