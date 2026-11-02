@@ -39,6 +39,7 @@ class BudgetConfig:
 class ModalConfig:
     gpu: str
     eval_timeout_s: int
+    gpu_usd_per_hour: float
 
 
 @dataclass(frozen=True)
@@ -89,6 +90,7 @@ def load_config(path: Path = DEFAULT_CONFIG_PATH) -> Config:
         modal=ModalConfig(
             gpu=raw["modal"]["gpu"],
             eval_timeout_s=int(raw["modal"]["eval_timeout_s"]),
+            gpu_usd_per_hour=float(raw["modal"]["gpu_usd_per_hour"]),
         ),
         paths=PathsConfig(
             db=base / raw["paths"]["db"],
