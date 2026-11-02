@@ -6,6 +6,7 @@ HarnessResult per attempt, with speedups stored as columns for SQL (B18).
 """
 
 import json
+import threading
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
@@ -48,6 +49,7 @@ CREATE TABLE IF NOT EXISTS attempts (
     code_hash VARCHAR NOT NULL,
     code VARCHAR NOT NULL,         -- kept for audits (Y6) and the report (B19)
     plan_summary VARCHAR NOT NULL,
+    role VARCHAR NOT NULL,         -- planner / fixer (the agent loop resumes from it)
     UNIQUE (run_id, task_id, n)
 );
 CREATE TABLE IF NOT EXISTS evals (
@@ -97,12 +99,16 @@ class Attempt:
     code_hash: str
     code: str
     plan_summary: str = ""
+    role: str = "planner"
 
 
 @dataclass
 class ResultsDB:
     path: Path | str = ":memory:"
     _con: Any = field(init=False, repr=False)
+    # One DuckDB connection is not thread-safe; the batch runner (B17) shares one, so every
+    # call takes this lock.
+    _lock: Any = field(init=False, repr=False, default_factory=threading.RLock)
 
     def __post_init__(self) -> None:
         import duckdb
@@ -123,68 +129,75 @@ class ResultsDB:
 
     def sql(self, query: str, params: list[Any] | None = None) -> list[tuple]:
         """Run a query and fetch all rows (for metrics and ad-hoc analysis)."""
-        return self._con.execute(query, params or []).fetchall()
+        with self._lock:
+            return self._con.execute(query, params or []).fetchall()
 
     # --- writes ---
 
     def upsert_tasks(self, tasks: list[Task]) -> None:
-        rows = [
-            (
-                t.id,
-                t.level,
-                t.name,
-                t.group,
-                t.split,
-                t.role,
-                t.in_fast_p,
-                t.dtype,
-                t.bytes,
-                t.flops,
+        with self._lock:
+            rows = [
+                (
+                    t.id,
+                    t.level,
+                    t.name,
+                    t.group,
+                    t.split,
+                    t.role,
+                    t.in_fast_p,
+                    t.dtype,
+                    t.bytes,
+                    t.flops,
+                )
+                for t in tasks
+            ]
+            self._con.executemany(
+                "INSERT OR REPLACE INTO tasks VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", rows
             )
-            for t in tasks
-        ]
-        self._con.executemany(
-            "INSERT OR REPLACE INTO tasks VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", rows
-        )
 
     def insert_run(self, run: Run) -> None:
-        started = run.started_at.astimezone(UTC).replace(tzinfo=None)
-        self._con.execute(
-            "INSERT INTO runs VALUES (?, ?, ?, ?)",
-            [run.run_id, json.dumps(run.config, sort_keys=True), started, run.git_sha],
-        )
+        with self._lock:
+            started = run.started_at.astimezone(UTC).replace(tzinfo=None)
+            self._con.execute(
+                "INSERT INTO runs VALUES (?, ?, ?, ?)",
+                [run.run_id, json.dumps(run.config, sort_keys=True), started, run.git_sha],
+            )
 
     def insert_attempt(self, attempt: Attempt) -> None:
-        values = list(attempt.__dict__.values())
-        self._con.execute(f"INSERT INTO attempts VALUES ({', '.join('?' * len(values))})", values)
+        with self._lock:
+            values = list(attempt.__dict__.values())
+            self._con.execute(
+                f"INSERT INTO attempts VALUES ({', '.join('?' * len(values))})", values
+            )
 
     def insert_eval(self, attempt_id: str, result: HarnessResult) -> None:
-        t = result.timing
-        self._con.execute(
-            f"INSERT INTO evals VALUES ({', '.join('?' * 18)})",
-            [
-                attempt_id,
-                result.task_id,
-                str(result.status),
-                result.error_excerpt,
-                result.max_err,
-                str(result.failing_shape_class) if result.failing_shape_class else None,
-                json.dumps(result.failing_shape) if result.failing_shape is not None else None,
-                [str(f) for f in result.cheat_flags],
-                t.kernel_ms if t else None,
-                t.eager_ms if t else None,
-                t.compile_ms if t else None,
-                t.speedup_eager if t else None,
-                t.speedup_compile if t else None,
-                result.pct_peak_bandwidth,
-                result.pct_peak_flops,
-                result.gpu_seconds,
-                result.harness_version,
-                json.dumps(result.extra, sort_keys=True, default=str),
-            ],
-        )
+        with self._lock:
+            t = result.timing
+            self._con.execute(
+                f"INSERT INTO evals VALUES ({', '.join('?' * 18)})",
+                [
+                    attempt_id,
+                    result.task_id,
+                    str(result.status),
+                    result.error_excerpt,
+                    result.max_err,
+                    str(result.failing_shape_class) if result.failing_shape_class else None,
+                    json.dumps(result.failing_shape) if result.failing_shape is not None else None,
+                    [str(f) for f in result.cheat_flags],
+                    t.kernel_ms if t else None,
+                    t.eager_ms if t else None,
+                    t.compile_ms if t else None,
+                    t.speedup_eager if t else None,
+                    t.speedup_compile if t else None,
+                    result.pct_peak_bandwidth,
+                    result.pct_peak_flops,
+                    result.gpu_seconds,
+                    result.harness_version,
+                    json.dumps(result.extra, sort_keys=True, default=str),
+                ],
+            )
 
-    # --- reads ---
+        # --- reads ---
 
     def get_run(self, run_id: str) -> Run | None:
         row = self._one("SELECT * FROM runs WHERE run_id = ?", run_id)
@@ -221,6 +234,26 @@ class ResultsDB:
             extra=json.loads(extra),
         )
 
+    def record_attempt(self, attempt: Attempt, result: HarnessResult) -> None:
+        """Insert an attempt and its eval together: a kill never leaves half a record."""
+        with self._lock:
+            self._con.execute("BEGIN TRANSACTION")
+            try:
+                self.insert_attempt(attempt)
+                self.insert_eval(attempt.attempt_id, result)
+                self._con.execute("COMMIT")
+            except BaseException:
+                self._con.execute("ROLLBACK")
+                raise
+
+    def task_attempts(self, run_id: str, task_id: str) -> list[tuple[Attempt, HarnessResult]]:
+        """A task's recorded attempts in order, each with its eval (for resuming)."""
+        rows = self.sql(
+            "SELECT attempt_id FROM attempts WHERE run_id = ? AND task_id = ? ORDER BY n",
+            [run_id, task_id],
+        )
+        return [(self.get_attempt(aid), self.get_eval(aid)) for (aid,) in rows]
+
     def attempt_ids(self, run_id: str) -> set[str]:
         """Attempts already recorded for a run (B17 skips these when resuming)."""
         return {
@@ -228,4 +261,5 @@ class ResultsDB:
         }
 
     def _one(self, query: str, key: str) -> tuple | None:
-        return self._con.execute(query, [key]).fetchone()
+        with self._lock:
+            return self._con.execute(query, [key]).fetchone()

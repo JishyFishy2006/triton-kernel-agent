@@ -65,7 +65,8 @@ def attempt_id(run_id: str, task_id: str, n: int) -> str:
 
 
 class DBRecorder:
-    """agent.run_task's on_attempt callback: one attempts row and one evals row per attempt."""
+    """agent.run_task's on_attempt callback: one attempts row and one evals row per attempt,
+    written together in one transaction."""
 
     def __init__(self, db: ResultsDB, run_id: str, setup: str):
         self.db, self.run_id, self.setup = db, run_id, setup
@@ -74,7 +75,7 @@ class DBRecorder:
         reply = record.reply
         code = reply.response.code if reply.response else ""
         aid = attempt_id(self.run_id, record.result.task_id, record.n)
-        self.db.insert_attempt(
+        self.db.record_attempt(
             Attempt(
                 attempt_id=aid,
                 run_id=self.run_id,
@@ -90,6 +91,7 @@ class DBRecorder:
                 code_hash="sha256:" + hashlib.sha256(code.encode()).hexdigest(),
                 code=code,
                 plan_summary=reply.response.plan_summary if reply.response else "",
-            )
+                role=record.role,
+            ),
+            record.result,
         )
-        self.db.insert_eval(aid, record.result)
