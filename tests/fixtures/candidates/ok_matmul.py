@@ -1,7 +1,6 @@
 # task: L1-1
 # expect: none
-# expect-runtime: none
-# expect-correct: yes
+# expect-status: correct
 import torch
 import torch.nn as nn
 import triton

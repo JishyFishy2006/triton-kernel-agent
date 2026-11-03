@@ -1,5 +1,6 @@
-"""B9 acceptance on an H100: identical kernels time the same, slower kernels time slower,
-side-stream work is timed, and a kernel that changes after the checks is caught.
+"""B9 acceptance on an H100, through the whole isolated harness (Y4): identical kernels time
+the same, slower kernels time slower, side-stream work is timed, and a kernel that changes
+after the checks is caught.
 
 Run with: uv run modal run src/triton_kernel_agent/modal_bench.py
 """
@@ -16,64 +17,47 @@ FIXTURES = (
     if modal.is_local()
     else None
 )
-# Extra GPU time added to the slow kernel: ~1 ms at H100 clocks.
-SLEEP_CYCLES = 2_000_000
 
 app = modal.App("tka-bench")
 
 
 @app.function(gpu=GPU, image=image, timeout=1800)
-def bench_acceptance(task_source: str, fixtures: dict[str, str]) -> dict:
-    import torch
-    from triton.testing import do_bench
+def bench_acceptance(task: dict, fixtures: dict[str, str]) -> dict:
+    from triton_kernel_agent.harness import EvalRequest, evaluate
 
-    from triton_kernel_agent.benchmark import benchmark
-    from triton_kernel_agent.harness_result import ShapeClass
-    from triton_kernel_agent.hidden_shapes import build_case, generate
-    from triton_kernel_agent.reference import INIT_SEED
-    from triton_kernel_agent.runtime_check import load_candidate
+    def run(source: str, baselines=None, skip_static=False) -> dict:
+        req = EvalRequest(**task, candidate_source=source, baselines=baselines,
+                          skip_static_scan=skip_static)  # fmt: skip
+        return json.loads(evaluate(req).to_json())
 
-    large = next(c for c in generate("L1-19", task_source) if c.shape_class == ShapeClass.LARGE)
-    ref, init, inputs = build_case(task_source, large, "cuda")
-
-    def candidate(name: str, source: str):
-        torch.manual_seed(INIT_SEED)
-        return load_candidate(source, name).ModelNew(*init).cuda()
-
-    slow_source = fixtures["ok_relu"].replace(
-        "        return out\n", f"        torch.cuda._sleep({SLEEP_CYCLES})\n        return out\n"
-    )
-    out: dict = {"input_shapes": [list(x.shape) for x in inputs]}
-    first = benchmark(ref, candidate("ok_a", fixtures["ok_relu"]), inputs, 1e-4, 1e-4)
-    out["first"] = {"timing": first.timing.__dict__, "extra": first.extra, "ok": first.consistent}
-    for name, source in [
-        ("second", fixtures["ok_relu"]),
-        ("slow", slow_source),
-        ("side_stream", fixtures["cheat_side_stream"]),
-        ("lazy", fixtures["rt_lazy_after_checks"]),
-    ]:
-        model = candidate(name, source)
-        result = benchmark(ref, model, inputs, 1e-4, 1e-4, compile_baseline=False)
-        out[name] = {
-            "kernel_ms": result.timing.kernel_ms,
-            "runs": result.extra["kernel_runs_ms"],
-            "consistent": result.consistent,
-            "post_check": result.post_check.status,
-        }
-        if name == "side_stream":
-            # What a timer without the device-wide sync would have reported.
-            out[name]["unsynced_ms"] = do_bench(lambda m=model: m(*inputs), return_mode="median")
+    # The same kernel launched twice: about twice the work, all of it Triton.
+    launch = "        relu_kernel[grid](x, out, n, BLOCK=1024)\n"
+    slow = fixtures["ok_relu"].replace(launch, launch * 2)
+    assert slow != fixtures["ok_relu"]
+    out = {"first": run(fixtures["ok_relu"])}
+    bench = out["first"]["extra"]["benchmark"]
+    cached = {"eager_runs_ms": bench["eager_runs_ms"], "compile_runs_ms": bench["compile_runs_ms"]}
+    out["second"] = run(fixtures["ok_relu"], cached)
+    out["slow"] = run(slow, cached)
+    # Side streams are a static cheat; skip the scan to time one anyway.
+    out["side_stream"] = run(fixtures["cheat_side_stream"], cached, skip_static=True)
+    out["lazy"] = run(fixtures["rt_lazy_after_checks"], cached)
     return out
 
 
 @app.local_entrypoint()
 def main() -> None:
+    print(json.dumps(acceptance(), indent=1, default=str))
+
+
+def acceptance() -> dict:
     from triton_kernel_agent.tasks import get_task
 
+    t = get_task("L1-19")
+    task = {
+        "task_id": t.id, "task_source": t.source, "atol": t.atol, "rtol": t.rtol,
+        "bytes": t.bytes or 0, "flops": t.flops or 0, "input_domain": t.input_domain,
+    }  # fmt: skip
     names = ("ok_relu", "cheat_side_stream", "rt_lazy_after_checks")
     fixtures = {n: (FIXTURES / f"{n}.py").read_text() for n in names}
-    print(
-        json.dumps(
-            bench_acceptance.remote(get_task("L1-19").source, fixtures), indent=1, default=str
-        )
-    )
+    return bench_acceptance.remote(task, fixtures)

@@ -1,5 +1,6 @@
 # task: L1-19
 # expect: none
+# expect-status: mismatch
 # B11: prints a line that looks like a passing harness result, then returns the wrong answer.
 import torch.nn as nn
 

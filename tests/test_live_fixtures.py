@@ -1,10 +1,8 @@
-"""Live B8 acceptance on a Modal H100, plus the B7 real-kernel claim.
+"""Live acceptance on Modal H100s: every fixture through the whole isolated harness (B7, B8,
+B9, Y4). Each fixture's header says what must happen (see modal_fixtures.py). Real Triton
+kernels (ok_*) must be correct; every red-team cheat (y4_*) must fail, or gain nothing.
 
-Roadmap: a fixture that caches outputs fails; one returning a view of the input fails; one
-calling cuBLAS through a wrapper fails. Every fixture's header says what should happen; the
-real Triton kernels (ok_*) must be correct on every hidden case and clean at runtime.
-
-Run with: uv run pytest -m live tests/test_live_fixtures.py
+Run with: uv run pytest -m live tests/test_live_fixtures.py   (about ten minutes)
 """
 
 import os
@@ -21,38 +19,31 @@ def _modal_authenticated() -> bool:
 
 @pytest.fixture(scope="module")
 def results():
-    from triton_kernel_agent.modal_fixtures import app, fixture_args, run_fixture
+    from triton_kernel_agent.modal_fixtures import app, run_all
 
     if not _modal_authenticated():
         pytest.skip("Modal not set up; run `modal setup`")
-    args = fixture_args()
     with app.run():
-        out = list(run_fixture.starmap(args, order_outputs=True))
-    return {r["fixture"]: (r, text) for r, (_, text, _, _) in zip(out, args, strict=True)}
+        return run_all()
 
 
 def test_every_fixture_behaves_as_its_header_says(results):
-    from triton_kernel_agent.modal_fixtures import fixture_header
+    from triton_kernel_agent.modal_fixtures import problems
 
-    problems = []
-    for name, (r, text) in results.items():
-        if "error" in r:
-            problems.append(f"{name}: {r['error'][-300:]}")
-            continue
-        want_runtime = fixture_header(text, "expect-runtime")
-        want = set() if want_runtime == "none" else {f.strip() for f in want_runtime.split(",")}
-        got = set(r["runtime"])
-        if (want == set() and got) or not want <= got:
-            problems.append(f"{name}: runtime {sorted(got)}, expected {sorted(want)}")
-        want_correct = fixture_header(text, "expect-correct") == "yes"
-        if r["correct"] != want_correct:
-            problems.append(f"{name}: correct={r['correct']}, expected {want_correct}")
-    assert problems == []
+    assert problems(results) == []
 
 
 def test_roadmap_fixtures(results):
-    assert "input_insensitive" in results["rt_cache_by_shape"][0]["runtime"]
-    assert "output_aliases_input" in results["rt_view_of_input"][0]["runtime"]
-    assert "aten_compute" in results["rt_hidden_cublas"][0]["runtime"]
+    by_name = {r["fixture"]: r["result"] for r in results}
+    assert "input_insensitive" in by_name["rt_cache_by_shape"]["cheat_flags"]
+    assert "aten_compute" in by_name["rt_hidden_cublas"]["cheat_flags"]
     for name in ("ok_relu", "ok_matmul", "ok_softmax", "ok_gemm_add_relu"):
-        assert results[name][0]["correct"] and results[name][0]["runtime"] == [], name
+        assert by_name[name]["status"] == "correct", name
+
+
+def test_no_cheat_is_correct_and_faster_than_eager(results):
+    for r in results:
+        res = r["result"]
+        if r["fixture"].startswith(("y4_", "rt_", "cheat_")) and res["status"] == "correct":
+            t = res["timing"]
+            assert t["eager_ms"] / t["kernel_ms"] < 1.1, r["fixture"]

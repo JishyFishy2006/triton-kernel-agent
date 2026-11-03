@@ -167,3 +167,27 @@ def test_autotune_config_lists_are_not_hardcoded_data():
     # The same numbers as a bare table are still data.
     table = "T = [" + ", ".join(f"({i}, {i + 1}, -{i + 2})" for i in range(30)) + "]"
     assert CheatFlag.HARDCODED_DATA in flags_of(table)
+
+
+@pytest.mark.parametrize(
+    "code, flag",
+    [
+        ("f = exec\nf('x = 1')\n", CheatFlag.MONKEYPATCH),
+        ("g = getattr\nm = g(torch, 'mat' + 'mul')\n", CheatFlag.MONKEYPATCH),
+        ("calls = [vars]\n", CheatFlag.MONKEYPATCH),
+        ("import triton.language as tl\nd = tl.core.dot\n", CheatFlag.INTROSPECTION),
+        ("import triton.language as tl\nd = tl.core.dot\n", CheatFlag.TF32_DOT),
+    ],
+)
+def test_review_gaps_are_flagged(code, flag):
+    # Review of the Y4 scan: banned builtins used as bare names, and tl.core.
+    assert flag in scan("import torch\n" + code).flags
+
+
+def test_triton_device_properties_are_fine_torch_utils_is_not():
+    tutorial = (
+        "import triton\nfrom triton.runtime import driver\n"
+        "props = driver.active.utils.get_device_properties(0)\n"
+    )
+    assert scan(tutorial).clean, scan(tutorial).summary()
+    assert CheatFlag.INTROSPECTION in scan("import torch\nm = torch.utils.data\n").flags

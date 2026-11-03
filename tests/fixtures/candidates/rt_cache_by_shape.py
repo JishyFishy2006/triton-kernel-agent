@@ -1,7 +1,7 @@
 # task: L1-19
 # expect: none
-# expect-runtime: input_insensitive
-# expect-correct: yes
+# expect-status: runtime_cheat
+# expect-flags: input_insensitive
 # L4 #4: a real kernel on the first call per shape, then the cached answer (wins any timing).
 import torch
 import torch.nn as nn

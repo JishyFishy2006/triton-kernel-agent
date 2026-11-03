@@ -59,11 +59,37 @@ def test_illegal_memory_access_is_reported_and_the_next_eval_runs(runner):
     task = get_task("L1-19")
     bad = runner.evaluate(task, fixture("sb_illegal_access"))
     assert bad.status == Status.RUNTIME_ERROR
-    assert "illegal memory access" in bad.error_excerpt.lower()
+    # The driver words it either way (cudaErrorIllegalAddress or error 717).
+    text = bad.error_excerpt.lower()
+    assert "illegal memory access" in text or "invalid_address" in text, text[-300:]
 
     good = runner.evaluate(task, fixture("ok_relu"))
     assert good.status == Status.CORRECT, good.error_excerpt
     assert good.timing.kernel_ms > 0 and good.pct_peak_bandwidth > 50
+
+
+def test_a_candidate_cannot_poison_later_evals_in_the_same_sandbox(runner):
+    # Y4 F3: an earlier eval appended a patch to the installed harness, which then passed a
+    # plainly wrong kernel. The worker runs as an unprivileged user that cannot write (or even
+    # read) the harness, and every eval's files and processes are removed after it.
+    from triton_kernel_agent.harness import EvalRequest
+    from triton_kernel_agent.sandbox import result_from_process
+
+    task = get_task("L1-19")
+    attacker = fixture("y4_f3_poison_harness_files")
+    request = EvalRequest(task.id, task.source, attacker, task.atol, task.rtol, task.bytes,
+                          task.flops, nonce="n", skip_static_scan=True)  # fmt: skip
+    import dataclasses
+    import json
+
+    code, out, err, seconds = runner.exec(
+        "python", "-m", "triton_kernel_agent.harness",
+        stdin=json.dumps(dataclasses.asdict(request)),
+    )  # fmt: skip
+    first = result_from_process(task.id, "n", code, out, err, seconds, 300)
+    assert first.status != Status.HARNESS_ERROR, first.error_excerpt
+    later = runner.evaluate(task, fixture("sb_fake_result"))
+    assert later.status == Status.MISMATCH
 
 
 def test_a_printed_fake_result_is_ignored(runner):

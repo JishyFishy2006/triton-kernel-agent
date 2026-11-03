@@ -19,40 +19,48 @@ def _modal_authenticated() -> bool:
 
 @pytest.fixture(scope="module")
 def result():
-    from triton_kernel_agent.modal_bench import FIXTURES, app, bench_acceptance
-    from triton_kernel_agent.tasks import get_task
+    from triton_kernel_agent.modal_bench import acceptance, app
 
     if not _modal_authenticated():
         pytest.skip("Modal not set up; run `modal setup`")
-    names = ("ok_relu", "cheat_side_stream", "rt_lazy_after_checks")
-    fixtures = {n: (FIXTURES / f"{n}.py").read_text() for n in names}
     with app.run():
-        return bench_acceptance.remote(get_task("L1-19").source, fixtures)
+        return acceptance()
+
+
+def ms(r):
+    return r["timing"]["kernel_ms"]
 
 
 def test_identical_kernels_measure_within_5_percent(result):
-    first, second = result["first"]["timing"]["kernel_ms"], result["second"]["kernel_ms"]
-    assert abs(second / first - 1) < 0.05, (first, second)
-    assert result["first"]["ok"] and result["second"]["consistent"]
+    first, second = result["first"], result["second"]
+    assert first["status"] == second["status"] == "correct"
+    assert abs(ms(second) / ms(first) - 1) < 0.05, (ms(first), ms(second))
+    assert second["extra"]["benchmark"]["baselines_cached"]
 
 
 def test_a_kernel_with_an_added_sleep_measures_slower(result):
-    assert result["slow"]["kernel_ms"] > 1.5 * result["first"]["timing"]["kernel_ms"]
+    assert result["slow"]["status"] == "correct"
+    assert ms(result["slow"]) > 1.5 * ms(result["first"])
 
 
-def test_side_stream_work_is_timed(result):
+def test_side_stream_kernels_are_caught_or_fully_timed(result):
+    # Its stream does not wait for the new input values written between timed batches, so the
+    # checked output of a batch comes out wrong (seen on an H100). Were it correct, the worker's
+    # device-wide sync would put its work inside the parent's clock.
     side = result["side_stream"]
-    # Timed with the device-wide sync it costs about what the same kernel costs normally;
-    # a timer on the current stream alone would have reported a fraction of that.
-    assert side["kernel_ms"] > 0.5 * result["first"]["timing"]["kernel_ms"]
-    assert side["unsynced_ms"] < 0.5 * side["kernel_ms"]
+    if side["status"] == "correct":
+        assert ms(side) > 0.8 * ms(result["first"])
+    else:
+        assert side["cheat_flags"] == ["changed_after_checks"]
 
 
 def test_a_kernel_that_changes_after_the_checks_is_caught(result):
-    assert result["lazy"]["consistent"] is False
+    assert result["lazy"]["status"] == "runtime_cheat"
+    # Its skipped calls return the last output: right values, impossibly fast.
+    assert set(result["lazy"]["cheat_flags"]) <= {"changed_after_checks", "impossible_speed"}
 
 
 def test_baselines_are_timed(result):
-    timing = result["first"]["timing"]
+    timing, bench = result["first"]["timing"], result["first"]["extra"]["benchmark"]
     assert timing["eager_ms"] > 0 and timing["compile_ms"] > 0
-    assert result["first"]["extra"]["repeats"] == 3
+    assert len(bench["kernel_runs_ms"]) == 5 and bench["calls_per_batch"] >= 1

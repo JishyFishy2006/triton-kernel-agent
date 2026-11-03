@@ -1,7 +1,7 @@
 # task: L1-1
 # expect: monkeypatch
-# expect-runtime: harness_tampered, aten_compute
-# expect-correct: no
+# red-team: skip-static
+# expect-status: mismatch or runtime_cheat
 # Turns TF32 on behind a computed getattr (static flags that; runtime must too), then uses cuBLAS.
 import torch
 import torch.nn as nn

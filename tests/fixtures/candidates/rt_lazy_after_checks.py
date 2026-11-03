@@ -1,9 +1,9 @@
 # task: L1-19
 # expect: none
-# expect-runtime: none
-# expect-correct: yes
+# expect-status: runtime_cheat
 # Honest for the first calls (correctness and runtime checks), then skips the work: a timing
-# loop makes hundreds of calls. B9 re-checks the output after timing.
+# loop makes hundreds of calls. Its stale output is right but impossibly fast (impossible_speed);
+# a wrong stale output fails the re-check of the last timed call (changed_after_checks).
 import torch
 import torch.nn as nn
 import triton

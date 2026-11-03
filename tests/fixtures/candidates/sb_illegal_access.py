@@ -1,5 +1,6 @@
 # task: L1-19
 # expect: none
+# expect-status: runtime_error
 # B11: writes far outside its output buffer (no mask): an illegal memory access that breaks this
 # process's CUDA context. The next eval must still run.
 import torch

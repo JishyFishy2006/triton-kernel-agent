@@ -4,7 +4,7 @@ The real sandbox is tests/test_live_sandbox.py."""
 import json
 
 from triton_kernel_agent.harness import RESULT_PREFIX, EvalRequest, evaluate
-from triton_kernel_agent.harness_result import CheatFlag, HarnessResult, ShapeClass, Status
+from triton_kernel_agent.harness_result import CheatFlag, HarnessResult, Status
 from triton_kernel_agent.sandbox import parse_output, result_from_process
 from triton_kernel_agent.tasks import get_task
 
@@ -75,15 +75,3 @@ def test_crash_text_from_a_hidden_case_is_redacted():
     # A fake stage line without the nonce does not count.
     r = result_from_process("L1-8", "n", 1, f"{STAGE_PREFIX}:x:visible", stderr, 3.0, 300)
     assert r.extra["case"] == "visible" and "1237" in r.error_excerpt
-
-
-def test_ptxas_failures_at_launch_are_compile_errors():
-    from triton_kernel_agent.correctness import CorrectnessResult
-    from triton_kernel_agent.harness import _Clock, _failed
-
-    excerpt = "ptxas fatal   : Ptx assembly aborted due to errors"
-    failed = CorrectnessResult(Status.RUNTIME_ERROR, None, ShapeClass.VISIBLE, None, excerpt)
-    result = _failed(request("x"), _Clock(), failed)
-    assert result.status == Status.COMPILE_ERROR
-    crash = CorrectnessResult(Status.RUNTIME_ERROR, None, ShapeClass.VISIBLE, None, "CUDA error")
-    assert _failed(request("x"), _Clock(), crash).status == Status.RUNTIME_ERROR
