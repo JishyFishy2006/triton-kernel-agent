@@ -166,3 +166,17 @@ def test_a_failed_response_raises(tmp_path: Path):
     with pytest.raises(RuntimeError, match="response.failed"):
         client.complete(WONDER, [{"role": "user", "content": "hi"}])
     assert not log.exists()
+
+
+def test_a_stream_that_only_sends_keepalives_is_cut_off_and_retried(tmp_path, monkeypatch):
+    # 2026-11-03: stalled streams sent keepalives for 17+ minutes; the deadline ends them.
+    from triton_kernel_agent import llm
+
+    monkeypatch.setattr(llm, "STREAM_DEADLINE_S", -1.0)  # already past on the first event
+    keepalives = sse(*({"type": "keepalive", "sequence_number": i} for i in range(3)))
+    client, log, requests = make_client(tmp_path, [keepalives, keepalives, keepalives])
+
+    with pytest.raises(llm.IncompleteStream, match="deadline"):
+        client.complete(WONDER, [{"role": "user", "content": "hi"}])
+    assert len(requests) == 3  # first try + max_retries=2
+    assert not log.exists()
