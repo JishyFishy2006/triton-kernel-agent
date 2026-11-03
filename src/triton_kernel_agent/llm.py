@@ -4,6 +4,10 @@ Calls use the Responses API with streaming. Meta closes a connection that sends 
 60 s, and Wonder at high effort reasons for minutes before its first token, so non-streaming
 Chat Completions (and even streaming ones) fail with "Server disconnected"; streaming
 Responses sends a keepalive event every 30 s (measured 2026-10-29).
+
+Keepalives also keep a stalled stream open forever: on 2026-11-03 eight concurrent Wonder
+streams sent only keepalives for 17+ minutes while new calls answered in seconds. So each
+stream has a deadline; past it the stream is closed and the call retried.
 """
 
 import json
@@ -21,6 +25,8 @@ from triton_kernel_agent.env import Secrets
 from triton_kernel_agent.pricing import PRICES, call_cost_usd
 
 CALL_LOG_NAME = "model_calls.jsonl"
+# Longest a single streamed reply may take. Wonder at high effort took at most ~4 min so far.
+STREAM_DEADLINE_S = 600.0
 
 
 @dataclass(frozen=True)
@@ -93,7 +99,7 @@ class ModelClient:
                 **kwargs,
             )
             try:
-                response = _final_response(stream)
+                response = _final_response(stream, time.monotonic() + STREAM_DEADLINE_S)
                 break
             except (APIConnectionError, APITimeoutError, IncompleteStream):
                 if attempt == self.max_retries:
@@ -142,12 +148,21 @@ class IncompleteStream(RuntimeError):
     """The stream ended without a response.completed event."""
 
 
-def _final_response(stream: Any) -> Any:
-    """Drain a Responses stream and return the completed response."""
+def _final_response(stream: Any, deadline: float = float("inf")) -> Any:
+    """Drain a Responses stream and return the completed response.
+
+    Checked on every event, keepalives included (one every 30 s), so a stalled stream is
+    closed at most ~30 s after the deadline.
+    """
     for event in stream:
         if event.type == "response.completed":
             return event.response
         if event.type in ("response.failed", "response.incomplete", "error"):
             detail = getattr(event, "response", None) or event
             raise RuntimeError(f"model call failed: {event.type}: {detail}")
+        if time.monotonic() > deadline:
+            close = getattr(stream, "close", None)
+            if close is not None:
+                close()
+            raise IncompleteStream("no reply before the stream deadline")
     raise IncompleteStream("stream ended before response.completed")
