@@ -48,12 +48,14 @@ class CheatFlag(StrEnum):
     MONKEYPATCH = "monkeypatch"  # assigns module attributes, setattr, exec/eval, builtins
     SIDE_STREAM = "side_stream"  # launches on another CUDA stream or a CUDA graph
     HARDCODED_DATA = "hardcoded_data"  # large literal arrays or blobs: precomputed answers
+    LOW_PRECISION = "low_precision"  # fp16/bf16/fp8 values or casts: emulated fp32 (Y4 D8)
     # Runtime (B8): seen while it runs.
     ATEN_COMPUTE = "aten_compute"  # aten compute ops, or cuBLAS/cuDNN kernels, in forward
     INPUT_INSENSITIVE = "input_insensitive"  # output did not change when the input did
     OUTPUT_ALIASES_INPUT = "output_aliases_input"  # output shares memory with an input
     HARNESS_TAMPERED = "harness_tampered"  # timers, checks or TF32 flags changed by the run
     CHANGED_AFTER_CHECKS = "changed_after_checks"  # wrong output after benchmarking (B9)
+    IMPOSSIBLE_SPEED = "impossible_speed"  # faster than the GPU's peak allows: work skipped
 
     @property
     def is_static(self) -> bool:
@@ -71,6 +73,7 @@ _STATIC_FLAGS = frozenset(
         CheatFlag.MONKEYPATCH,
         CheatFlag.SIDE_STREAM,
         CheatFlag.HARDCODED_DATA,
+        CheatFlag.LOW_PRECISION,
     }
 )
 

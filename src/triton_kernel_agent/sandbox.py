@@ -28,6 +28,8 @@ APP_NAME = "tka-sandbox"
 SANDBOX_LIFETIME_S = 4 * 3600
 # coreutils `timeout` exits 124 when it had to kill the command (137 if KILL reached it directly).
 TIMEOUT_EXIT_CODES = (124, 137)
+# Kills the worker user's processes and deletes its files (isolation.clean_user).
+CLEAN_UP = "from triton_kernel_agent.isolation import NOBODY, clean_user; clean_user(NOBODY)"
 
 
 def parse_output(stdout: str, nonce: str) -> HarnessResult | None:
@@ -133,6 +135,8 @@ class SandboxRunner:
         )  # fmt: skip
         result = result_from_process(task.id, nonce, returncode, stdout, stderr, seconds,
                                      self.eval_timeout_s)  # fmt: skip
+        if returncode in TIMEOUT_EXIT_CODES:  # the harness was killed and could not clean up
+            self.exec("python", "-c", CLEAN_UP)
         self._remember_baselines(task.id, result)
         return result
 

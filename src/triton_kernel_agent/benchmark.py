@@ -1,136 +1,98 @@
-"""Benchmark module (B9): time the candidate, eager PyTorch and torch.compile the same way.
+"""Benchmark (B9), timed with the trusted parent's own clock (Y4 isolation).
 
-- triton.testing.do_bench: warm-up, L2 flush between runs, median of many runs.
-- The timed function ends with torch.cuda.synchronize(), a device-wide wait. Work a candidate
-  pushes onto a side stream (L4 #2) is then inside the timed region; without it the timer on the
-  current stream stops before that work runs. Baselines get the same wrapper, so the small sync
-  cost is in every number and the speedups stay fair.
-- REPEATS independent do_bench runs; the reported time is their median.
-- Everything runs in strict fp32 (Y2 decision 1), and baselines are the reference model itself.
-- After timing, the candidate runs once more and its output is checked again: a kernel that is
-  correct only while being checked (e.g. counting calls) is changed_after_checks.
-
-Runs where torch (and, for the real timer, triton and CUDA) is installed.
+- Candidate, eager PyTorch and torch.compile each run in their own worker process
+  (isolation.py). The parent asks a worker for `calls` forward calls back to back on the
+  visible inputs and times the request with time.perf_counter; the worker ends each batch with
+  a device-wide sync, so work on any stream is inside the time (L4 #2). Nothing the candidate
+  runs can stop or slow the parent's clock (Y4 C03b), and the baselines run in workers that
+  never see candidate code, while no candidate process exists (Y4 B2, B5, B7).
+- calls is calibrated so one batch takes about BATCH_MS; REPEATS batches; the median counts.
+  Back-to-back calls measure steady-state time per call, the same way for all three.
+- Batches alternate between two visible-shape input sets, written into the same buffers
+  between batches, and every batch's last output is checked against the candidate's own
+  output for that set from the correctness stage. Batches make a random number of calls. A
+  kernel that caches across calls, or works only while checked, is changed_after_checks
+  (Y4 E3, D1-D9; review of the first isolated design).
+- The time must be physically possible: an honest kernel reads its inputs and weights and
+  writes its output, so it cannot beat moving the task's bytes at peak bandwidth. Faster means
+  work was skipped: caching or lazy timed calls (impossible_speed; Y4 A4, B1, D1-D9). FLOPs
+  give no such floor: eager L1-56 runs at 3.56 ms against a FLOP floor of 8.70 ms (cuDNN does
+  fewer FLOPs than the count), and L2-14 collapses algebraically to a matrix-vector product.
 """
 
+import math
+import random
 import time
-from collections.abc import Callable, Sequence
-from dataclasses import dataclass, field
+from collections.abc import Callable
+from dataclasses import dataclass
 from statistics import median
 from typing import Any
 
-from triton_kernel_agent.correctness import (
-    CaseCheck,
-    _clone,
-    _leaves,
-    _reference_fp64,
-    compare,
-    poison_free_memory,
-    strict_fp32,
-)
-from triton_kernel_agent.harness_result import Timing
+from triton_kernel_agent.roofline import GpuPeak
 
-REPEATS = 3
-WARMUP_MS = 25
-REP_MS = 100
+BATCH_MS = 200.0
+REPEATS = 5
+MAX_CALLS = 10_000
+# Percent of peak bandwidth above which a time is impossible. Honest copies reach ~87% on an
+# H100 (L9); 105 leaves room for spec-sheet rounding.
+IMPOSSIBLE_PCT = 105.0
+# One batch (BATCH_MS of calls, or one slow first call that compiles) must answer within this.
+BATCH_TIMEOUT_S = 240.0
 
 
-def bench(fn: Callable[[], Any], repeats: int = REPEATS) -> list[float]:
-    """Median ms of `fn` per do_bench run, `repeats` runs. Ends each call with a device sync."""
-    import torch
-    from triton.testing import do_bench
+class TimingFailed(Exception):
+    """The worker raised while being timed."""
 
-    def synced() -> None:
-        fn()
-        torch.cuda.synchronize()
-
-    return [
-        do_bench(synced, warmup=WARMUP_MS, rep=REP_MS, return_mode="median") for _ in range(repeats)
-    ]
+    def __init__(self, answer: dict[str, Any]):
+        super().__init__(answer.get("message", ""))
+        self.answer = answer
 
 
 @dataclass(frozen=True)
-class BenchResult:
-    timing: Timing
-    post_check: CaseCheck  # the candidate's output after timing, against the reference
-    extra: dict[str, Any] = field(default_factory=dict)  # every run, compile time
+class WorkerTiming:
+    runs_ms: list[float]  # per-call ms of each batch
+    first_call_s: float  # the first call: Triton JIT, or torch.compile for the compile baseline
+    calls: int  # calls per batch
 
     @property
-    def consistent(self) -> bool:
-        return self.post_check.passed
+    def median_ms(self) -> float:
+        return median(self.runs_ms)
 
 
-def benchmark(
-    ref_model,
-    cand_model,
-    inputs: Sequence[Any],
-    atol: float,
-    rtol: float,
-    compile_baseline: bool = True,
-    timer: Callable[[Callable[[], Any]], list[float]] = bench,
-    baselines: dict[str, list[float] | None] | None = None,
-) -> BenchResult:
-    """Time candidate, eager and torch.compile on the same inputs; then re-check the candidate.
+def _batch_ms(worker, calls: int) -> float:
+    start = time.perf_counter()
+    answer = worker.call({"cmd": "time", "calls": calls}, timeout_s=BATCH_TIMEOUT_S)
+    elapsed = time.perf_counter() - start
+    if not answer["ok"]:
+        raise TimingFailed(answer)
+    return 1e3 * elapsed
 
-    The candidate has already passed correctness (B5) and the runtime checks (B8).
-    `timer` is swappable for tests without a GPU. `baselines` ({"eager_runs_ms",
-    "compile_runs_ms"} from an earlier result's extra) skips re-timing eager and compile: they
-    do not change between attempts on a task, and compiling can take tens of seconds.
+
+def time_worker(worker, after_batch: Callable[[int], None] | None = None) -> WorkerTiming:
+    """Time a worker that has its model built and inputs loaded. Per-call ms per batch.
+
+    after_batch(i) runs after measured batch i, outside the timed window: the harness checks
+    the batch's last output there and writes new input values for the next batch. Each batch
+    makes a random number of calls, so the last (checked) call cannot be predicted.
     """
-    import torch
-
-    with strict_fp32(), torch.no_grad():
-        ref32 = [r.clone() for r in _leaves(ref_model(*_clone(inputs)))]
-    ref64 = _reference_fp64(ref_model, inputs)
-
-    with strict_fp32(), torch.no_grad():
-        if baselines and baselines.get("eager_runs_ms"):
-            eager_runs = baselines["eager_runs_ms"]
-            compile_runs = baselines.get("compile_runs_ms") or eager_runs
-            compile_baseline, compile_s = False, 0.0
-        else:
-            eager_runs = timer(lambda: ref_model(*inputs))
-            compile_runs, compile_s = eager_runs, 0.0
-        if compile_baseline:
-            compiled = torch.compile(ref_model)
-            start = time.perf_counter()
-            compiled(*inputs)
-            compile_s = time.perf_counter() - start
-            compile_runs = timer(lambda: compiled(*inputs))
-        kernel_runs = timer(lambda: cand_model(*inputs))
-
-        poison_free_memory()
-        after = _leaves(cand_model(*inputs))
-        if torch.cuda.is_available():
-            torch.cuda.synchronize()
-
-    post_check = _recheck(after, ref32, ref64, atol, rtol)
-    timing = Timing(
-        kernel_ms=median(kernel_runs), eager_ms=median(eager_runs), compile_ms=median(compile_runs)
-    )
-    extra = {
-        "kernel_runs_ms": kernel_runs,
-        "eager_runs_ms": eager_runs,
-        "compile_runs_ms": compile_runs if compile_baseline or baselines else None,
-        "baselines_cached": bool(baselines and baselines.get("eager_runs_ms")),
-        "compile_s": compile_s,
-        "repeats": len(kernel_runs),
-    }
-    return BenchResult(timing, post_check, extra)
+    first_s = _batch_ms(worker, 1) / 1e3
+    one = _batch_ms(worker, 1)
+    calls = max(1, min(MAX_CALLS, math.ceil(BATCH_MS / max(one, 1e-3))))
+    runs = []
+    for i in range(REPEATS):
+        n = calls + random.randrange(calls // 2 + 1)
+        runs.append(_batch_ms(worker, n) / n)
+        if after_batch is not None:
+            after_batch(i)
+    return WorkerTiming(runs, first_s, calls)
 
 
-def _recheck(after, ref32, ref64, atol, rtol) -> CaseCheck:
-    from triton_kernel_agent.harness_result import Status
-
-    if len(after) != len(ref32):
-        msg = f"returned {len(after)} tensors after timing, {len(ref32)} before"
-        return CaseCheck(Status.WRONG_SHAPE, float("nan"), float("nan"), None, "exact", msg)
-    worst = None
-    for i, (a, r32) in enumerate(zip(after, ref32, strict=True)):
-        r64 = ref64[i] if ref64 is not None and r32.is_floating_point() else None
-        check = compare(a, r32, r64, atol, rtol, hidden=False)
-        if not check.passed:
-            return check
-        if worst is None or check.max_err > worst.max_err:
-            worst = check
-    return worst
+def impossible_speed(nbytes: int, kernel_ms: float, peak: GpuPeak) -> str | None:
+    """A message if kernel_ms beats moving the task's bytes at peak bandwidth, else None."""
+    floor_ms = 1e3 * nbytes / peak.bandwidth_bytes_per_s
+    if floor_ms and kernel_ms * IMPOSSIBLE_PCT / 100 < floor_ms:
+        return (
+            f"{kernel_ms:.4f} ms per call is faster than the {peak.name} can move this task's "
+            f"inputs, weights and outputs ({floor_ms:.4f} ms at peak bandwidth)"
+        )
+    return None

@@ -49,6 +49,8 @@ CHEAT_HINTS = {
     "exec, eval) is not allowed.",
     CheatFlag.SIDE_STREAM: "Launch on the current CUDA stream only; no streams or CUDA graphs.",
     CheatFlag.HARDCODED_DATA: "Large literal data tables are not allowed: compute the result.",
+    CheatFlag.LOW_PRECISION: "Strict fp32 only: no float16, bfloat16 or fp8 values, casts or "
+    "split-precision tricks.",
     CheatFlag.ATEN_COMPUTE: "PyTorch or cuBLAS/cuDNN kernels ran during forward. Only your own "
     "Triton kernels may compute.",
     CheatFlag.INPUT_INSENSITIVE: "The output did not change when the input values changed: "
@@ -58,6 +60,8 @@ CHEAT_HINTS = {
     CheatFlag.HARNESS_TAMPERED: "Timers, checks or TF32 settings were changed while your code ran.",
     CheatFlag.CHANGED_AFTER_CHECKS: "The output was wrong after benchmarking: the kernel must "
     "compute the same correct result on every call.",
+    CheatFlag.IMPOSSIBLE_SPEED: "The measured time is faster than the GPU can read the inputs "
+    "and weights and write the output: the kernel must do the full work on every call.",
 }
 
 

@@ -11,18 +11,19 @@ Rules decided in Y2 (decisions/tasks_chosen.md):
   reference at the task's atol/rtol, as KernelBench does.
 - Models stay in training mode, as KernelBench runs them; nothing here calls .eval().
 
+Runs in the trusted parent only (Y4 isolation): the reference runs here, the candidate in a
+worker process (worker.py) whose outputs come back as plain tensors read from files.
 Runs where torch is installed (the Modal container, or tests on CPU); torch is imported lazily.
 """
 
 import copy
 import re
-import traceback
 from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
-from triton_kernel_agent.harness_result import ERROR_EXCERPT_CHARS, ShapeClass, Status
+from triton_kernel_agent.harness_result import Status
 
 # How much worse than the fp32 reference (both measured against fp64) a candidate may be.
 # An honest Triton GEMM that accumulates over K = 8192 in order lands at 9.6x cuBLAS's error
@@ -37,14 +38,6 @@ _CHUNK = 1 << 26
 
 
 @dataclass(frozen=True)
-class Case:
-    inputs: Sequence[Any]
-    shape_class: ShapeClass
-    # Hidden cases never put shapes or sizes in messages; the agent may see the message.
-    hidden: bool = True
-
-
-@dataclass(frozen=True)
 class CaseCheck:
     status: Status | None  # None means the case passed
     max_err: float  # worst |candidate - truth| (truth is fp64 when available)
@@ -56,33 +49,6 @@ class CaseCheck:
     @property
     def passed(self) -> bool:
         return self.status is None
-
-
-@dataclass(frozen=True)
-class CorrectnessResult:
-    status: Status | None  # None means every case passed
-    max_err: float | None  # worst error over all cases checked
-    failing_shape_class: ShapeClass | None = None
-    failing_shape: list[list[int]] | None = None
-    error_excerpt: str = ""
-    cases: list[CaseCheck] = field(default_factory=list)
-
-    @property
-    def passed(self) -> bool:
-        return self.status is None
-
-    def harness_fields(self) -> dict[str, Any]:
-        """Keyword arguments for HarnessResult, for a failed check (B11 adds the rest)."""
-        # HarnessResult carries a failing shape only for output problems, not crashes.
-        output_problem = self.status in (Status.WRONG_SHAPE, Status.NAN_INF, Status.MISMATCH)
-        return {
-            "status": self.status,
-            "max_err": self.max_err,
-            "failing_shape_class": self.failing_shape_class if output_problem else None,
-            "failing_shape": self.failing_shape if output_problem else None,
-            "error_excerpt": self.error_excerpt,
-            "extra": {"correctness": [c.__dict__ | {"status": c.status} for c in self.cases]},
-        }
 
 
 @contextmanager
@@ -119,11 +85,6 @@ def tf32_enabled() -> bool:
 def _redact(text: str) -> str:
     # Hidden-case messages must not leak sizes: drop every multi-digit number.
     return re.sub(r"\d{2,}", "<n>", text)
-
-
-def _excerpt(text: str, hidden: bool) -> str:
-    text = _redact(text) if hidden else text
-    return text[-ERROR_EXCERPT_CHARS:]
 
 
 def _chunks(t) -> Iterator[Any]:
@@ -255,80 +216,53 @@ def _reference_fp64(ref_model, inputs: Sequence[Any]) -> list[Any] | None:
             torch.cuda.empty_cache()
 
 
-def poison_free_memory(min_bytes: int = 1 << 30) -> None:
-    """Fill the CUDA caching allocator's free memory with NaN (L4 #5).
+def reference_outputs(ref_model, inputs: Sequence[Any]) -> tuple[list[Any], list[Any] | None]:
+    """The reference's outputs in strict fp32 and (when it fits in memory) fp64.
 
-    A candidate that returns torch.empty(...) without writing it could otherwise get back a
-    freed buffer that still holds a correct answer. Best effort: it covers one block of at least
-    min_bytes, which the allocator splits for later requests. No-op without CUDA.
+    Runs in the trusted parent only, before and apart from any candidate code (Y4 isolation):
+    a candidate in the same process could rewrite the reference's output with a hook (Y4 B3).
     """
     import torch
 
-    if not torch.cuda.is_available():
-        return
-    torch.cuda.empty_cache()
-    free, _ = torch.cuda.mem_get_info()
-    nbytes = min(max(min_bytes, 0), int(free * 0.5))
-    if nbytes >= 4:
-        torch.empty(nbytes // 4, dtype=torch.float32, device="cuda").fill_(float("nan"))
-    torch.cuda.synchronize()
-
-
-def run_case(ref_model, cand_model, case: Case, atol: float, rtol: float) -> CaseCheck:
-    """Run the candidate, then the reference (fp32 and fp64), on fresh copies of the inputs.
-
-    The candidate runs first, into NaN-poisoned memory, so no reference output exists yet for it
-    to find or inherit (L4 #1 and #5).
-    """
-    import torch
-
-    poison_free_memory()
     with strict_fp32(), torch.no_grad():
-        try:
-            cand = _leaves(cand_model(*_clone(case.inputs)))
-            if torch.cuda.is_available():
-                torch.cuda.synchronize()
-        except Exception:
-            msg = _excerpt(traceback.format_exc(), case.hidden)
-            return CaseCheck(Status.RUNTIME_ERROR, float("nan"), float("nan"), None, "exact", msg)
-        # Re-assert strict fp32: a candidate that turned TF32 on in forward would otherwise
-        # drag the reference into TF32 too, and the two would agree (seen on an H100).
-        with strict_fp32():
-            ref32 = _leaves(ref_model(*_clone(case.inputs)))
-    ref64 = _reference_fp64(ref_model, case.inputs)
+        ref32 = [r.clone() for r in _leaves(ref_model(*_clone(inputs)))]
+    return ref32, _reference_fp64(ref_model, inputs)
 
+
+def check_outputs(cand: Sequence[Any], ref32, ref64, atol: float, rtol: float,
+                  hidden: bool) -> CaseCheck:  # fmt: skip
+    """Compare the candidate's output tensors with the reference's; worst case or first failure.
+
+    The candidate's tensors are plain tensors the parent read from the worker's files, so a
+    tensor subclass cannot answer the comparison's own arithmetic (Y4 C01, E1).
+    """
     if len(cand) != len(ref32):
         msg = f"returned {len(cand)} tensors, expected {len(ref32)}"
         return CaseCheck(Status.WRONG_SHAPE, float("nan"), float("nan"), None, "exact", msg)
-
     worst: CaseCheck | None = None
     for i, (c, r32) in enumerate(zip(cand, ref32, strict=True)):
         r64 = ref64[i] if ref64 is not None and r32.is_floating_point() else None
-        check = compare(c, r32, r64, atol, rtol, case.hidden)
+        check = compare(c, r32, r64, atol, rtol, hidden)
         if not check.passed:
             return check
         if worst is None or check.max_err > worst.max_err:
             worst = check
-    return worst
+    return worst if worst is not None else CaseCheck(None, 0.0, 0.0, None, "exact")
 
 
-def check(ref_model, cand_model, cases: Sequence[Case], atol: float, rtol: float):
-    """Run cases in order and stop at the first failure."""
+def check_trusted(ref_model, cand_model, inputs: Sequence[Any], atol: float, rtol: float,
+                  hidden: bool = True) -> CaseCheck:  # fmt: skip
+    """Run a candidate WE wrote in this process and check it: validation tools and tests only.
+
+    Agent-written code never comes here; the harness runs it in a worker (Y4 isolation). The
+    candidate runs first, then strict fp32 is re-asserted for the reference: a candidate that
+    turns TF32 on in forward must not drag the reference into TF32 too.
+    """
     import torch
 
-    checks: list[CaseCheck] = []
-    for case in cases:
-        result = run_case(ref_model, cand_model, case, atol, rtol)
-        checks.append(result)
-        if not result.passed:
-            shapes = [list(x.shape) for x in case.inputs if isinstance(x, torch.Tensor)]
-            finite = [c.max_err for c in checks if c.max_err == c.max_err]
-            return CorrectnessResult(
-                status=result.status,
-                max_err=max(finite) if finite else None,
-                failing_shape_class=case.shape_class,
-                failing_shape=shapes,
-                error_excerpt=result.message,
-                cases=checks,
-            )
-    return CorrectnessResult(None, max((c.max_err for c in checks), default=None), cases=checks)
+    with strict_fp32(), torch.no_grad():
+        cand = [c.clone() for c in _leaves(cand_model(*_clone(inputs)))]
+        if torch.cuda.is_available():
+            torch.cuda.synchronize()
+    ref32, ref64 = reference_outputs(ref_model, inputs)
+    return check_outputs(cand, ref32, ref64, atol, rtol, hidden)
