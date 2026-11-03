@@ -13,7 +13,7 @@ from typing import Any
 
 # Results are only compared within one harness version (Y5 tags harness-v1). v0 is the
 # version under construction; bump on every change to fields or categories from v1 on.
-HARNESS_VERSION = "v0"
+HARNESS_VERSION = "v1"
 # Error text sent back is cut to this many characters, keeping the end (where tracebacks point).
 ERROR_EXCERPT_CHARS = 2000
 
