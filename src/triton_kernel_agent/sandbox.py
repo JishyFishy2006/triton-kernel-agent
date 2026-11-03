@@ -1,7 +1,7 @@
 """Sandbox runner (B11): candidate code string in, HarnessResult out.
 
-Each eval runs harness.py in a fresh Python process inside a long-lived Modal Sandbox on an
-H100 ("keep one warm container per worker"):
+Each eval runs harness.py in a fresh Python process inside a Modal Sandbox on an H100, kept
+while evals follow each other and shut down after SANDBOX_IDLE_S without one:
 - no network (block_network=True) and no secrets: the Meta API key never leaves this machine;
 - a hard wall-clock limit per eval (coreutils `timeout -s KILL`), reported as timeout;
 - a crash (illegal memory access, segfault) kills only that process; the next eval starts clean;
@@ -26,6 +26,10 @@ from triton_kernel_agent.tasks import Task
 APP_NAME = "tka-sandbox"
 # Upper bound on one Sandbox's life; a batch run creates a new one when it expires.
 SANDBOX_LIFETIME_S = 4 * 3600
+# A Sandbox with no eval running for this long shuts down; the next eval starts a new one. An
+# agent waits minutes for each model reply, and an idle H100 is billed like a busy one: kept
+# warm, a 3-setup batch would pay ~26 GPU-hours to wait on the API.
+SANDBOX_IDLE_S = 60
 # coreutils `timeout` exits 124 when it had to kill the command (137 if KILL reached it directly).
 TIMEOUT_EXIT_CODES = (124, 137)
 # Kills the worker user's processes and deletes its files (isolation.clean_user).
@@ -98,6 +102,7 @@ class SandboxRunner:
                 image=self.image,
                 gpu=self.gpu,
                 timeout=SANDBOX_LIFETIME_S,
+                idle_timeout=SANDBOX_IDLE_S,
                 block_network=True,  # generated code never talks to the outside world
             )
         return self._sandbox
@@ -105,7 +110,11 @@ class SandboxRunner:
     def exec(self, *cmd: str, stdin: str = "") -> tuple[int, str, str, float]:
         """Run a command in the sandbox: (returncode, stdout, stderr, seconds)."""
         start = time.monotonic()
-        proc = self._get_sandbox().exec(*cmd)
+        try:
+            proc = self._get_sandbox().exec(*cmd)
+        except modal.exception.Error:  # it went idle and shut down as we called: start anew
+            self._sandbox = None
+            proc = self._get_sandbox().exec(*cmd)
         if stdin:
             proc.stdin.write(stdin.encode())
         proc.stdin.write_eof()
