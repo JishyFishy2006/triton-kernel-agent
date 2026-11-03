@@ -2,6 +2,8 @@
 
     uv run python -m triton_kernel_agent.report [--db data/results.duckdb] [--out site/index.html]
 
+The human baseline row (Y3) comes from data/baselines.json, written by scripts/run_baselines.py.
+
 One self-contained HTML file (no scripts, no external assets), so it can be opened locally or
 published as is. It renders from any database, including a fresh empty one.
 """
@@ -161,7 +163,45 @@ def _cheats(db: ResultsDB) -> str:
             f"<th>Tasks</th></tr>{body}</table></div>")  # fmt: skip
 
 
-def render(db: ResultsDB, gpu_usd_per_hour: float) -> str:
+def _human(db: ResultsDB, baselines: dict, rows: list[tuple[str, str, Metrics]]) -> str:
+    """The human baseline next to each run's best kernel on the same tasks."""
+    ops = dict(db.sql("SELECT task_id, op_name FROM tasks"))
+    best = {(run_id, r.task_id): r for run_id, _, m in rows for r in m.per_task}
+    head = ("<tr><th>Task</th><th>Op</th><th>Human ms</th><th>vs eager</th><th>vs compile</th>"
+            "<th>% peak</th>"
+            + "".join(f"<th>{_e(setup)}<br><span class='muted'>{_e(run_id)}</span></th>"
+                      for run_id, setup, _ in rows)
+            + "</tr>")  # fmt: skip
+    body = []
+    for task_id, result in sorted(baselines["results"].items()):
+        timing = result.get("timing")
+        if result["status"] != "correct" or not timing:
+            human = f"<td colspan='4' class='bad'>{_e(result['status'])}</td>"
+        else:
+            eager = timing["eager_ms"] / timing["kernel_ms"]
+            compile_ = timing["compile_ms"] / timing["kernel_ms"]
+            peak = result.get("pct_peak_flops") or result.get("pct_peak_bandwidth")
+            human = (
+                f"<td>{timing['kernel_ms']:.3f}</td><td>{_x(eager)}</td>"
+                f"<td>{_x(compile_)}</td><td>{'–' if peak is None else f'{peak:.0f}%'}</td>"
+            )
+        cells = []
+        for run_id, _, _ in rows:
+            r = best.get((run_id, task_id))
+            if r is None or r.best_speedup_eager is None:
+                cells.append(f"<td class='muted'>{'–' if r is None else '✗'}</td>")
+            else:
+                cells.append(f"<td>{_x(r.best_speedup_eager)} <span class='muted'>"
+                             f"({_x(r.best_speedup_compile)} compile)</span></td>")  # fmt: skip
+        body.append(f"<tr><td>{_e(task_id)}</td><td>{_e(ops.get(task_id, ''))}</td>{human}"
+                    f"{''.join(cells)}</tr>")  # fmt: skip
+    return (f"<h2>Human baseline: {_e(baselines['label'])}</h2>"
+            "<p class='muted'>Run through the same harness as the agent. Run columns show the "
+            "agent's best speedup over eager on the same task.</p>"
+            f"<div class='scroll'><table>{head}{''.join(body)}</table></div>")  # fmt: skip
+
+
+def render(db: ResultsDB, gpu_usd_per_hour: float, baselines: dict | None = None) -> str:
     runs = _runs(db)
     generated = datetime.now(UTC).strftime("%Y-%m-%d %H:%M UTC")
     sections = []
@@ -184,6 +224,8 @@ def render(db: ResultsDB, gpu_usd_per_hour: float) -> str:
                         "<p class='muted'>Speedup over PyTorch eager of the best correct kernel; "
                         "@n is the attempt that first got it right; ✗ (n) means no correct "
                         "kernel in n attempts.</p>" + _per_task(db, all_rows))  # fmt: skip
+    if baselines and baselines.get("results"):
+        sections.append(_human(db, baselines, all_rows if runs else []))
     sections.append(f"<h2>Cheats caught</h2>{_cheats(db)}")
     return f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
@@ -203,9 +245,11 @@ def main(argv: list[str] | None = None) -> Path:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--db", type=Path, default=cfg.paths.db)
     parser.add_argument("--out", type=Path, default=Path("site/index.html"))
+    parser.add_argument("--baselines", type=Path, default=cfg.paths.db.parent / "baselines.json")
     args = parser.parse_args(argv)
+    baselines = json.loads(args.baselines.read_text()) if args.baselines.exists() else None
     with ResultsDB(args.db) as db:
-        page = render(db, cfg.modal.gpu_usd_per_hour)
+        page = render(db, cfg.modal.gpu_usd_per_hour, baselines)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(page)
     print(f"wrote {args.out}")

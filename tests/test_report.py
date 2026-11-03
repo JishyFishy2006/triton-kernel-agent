@@ -1,5 +1,6 @@
 """B19 acceptance: the page renders from a fresh DB in one command."""
 
+import json
 from datetime import UTC, datetime
 
 from triton_kernel_agent.db import Attempt, ResultsDB, Run
@@ -50,3 +51,32 @@ def test_html_in_data_is_escaped():
         db.insert_run(Run("<b>run</b>", {"setup": "<script>x</script>"}, datetime.now(UTC), "a"))
         page = render(db, gpu_usd_per_hour=3.95)
     assert "<script>x</script>" not in page and "&lt;script&gt;" in page
+
+
+BASELINES = {
+    "label": "Triton tutorial kernels (adapted)",
+    "results": {
+        "L1-19": {"status": "correct", "pct_peak_bandwidth": 80.0,
+                  "timing": {"kernel_ms": 2.0, "eager_ms": 4.0, "compile_ms": 3.0}},
+        "L1-29": {"status": "mismatch", "timing": None},
+    },
+}  # fmt: skip
+
+
+def test_human_baseline_row_sits_next_to_each_runs_best_kernel():
+    with ResultsDB() as db:
+        fill(db)
+        page = render(db, gpu_usd_per_hour=3.95, baselines=BASELINES)
+    human = page.split("Human baseline")[1]
+    for text in ("Triton tutorial kernels (adapted)", "2.000", "2.00×", "1.50×", "80%",
+                 "1.07×", "mismatch", "wonder_spark"):  # fmt: skip
+        assert text in human, text
+
+
+def test_baselines_render_without_runs(tmp_path):
+    path = tmp_path / "baselines.json"
+    path.write_text(json.dumps(BASELINES))
+    out = main(["--db", str(tmp_path / "fresh.duckdb"), "--out", str(tmp_path / "index.html"),
+                "--baselines", str(path)])  # fmt: skip
+    page = out.read_text()
+    assert "No runs yet" in page and "Human baseline" in page and "2.00×" in page
