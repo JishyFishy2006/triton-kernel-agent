@@ -1,7 +1,6 @@
 # task: L1-19
 # expect: none
-# expect-runtime: none
-# expect-correct: no
+# expect-status: mismatch or nan_inf
 # L4 #5: return uninitialized memory and hope it holds a freed copy of the right answer.
 import torch
 import torch.nn as nn

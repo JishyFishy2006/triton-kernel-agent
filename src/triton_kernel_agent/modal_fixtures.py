@@ -1,9 +1,17 @@
-"""Run candidate fixtures (tests/fixtures/candidates) through the harness checks on an H100.
+"""Run candidate fixtures (tests/fixtures/candidates) through the whole harness on an H100.
 
-For each fixture: the static scan (B7), correctness on every hidden case of its task (B5, B6),
-then the runtime checks (B8) with a HarnessGuard taken before the candidate's code runs.
+Each fixture goes through harness.evaluate() exactly as an agent attempt does: static scan,
+an unprivileged worker, hidden cases, runtime checks, clean baselines, timing (Y4 isolation).
+Headers say what must happen:
+    # task: L1-19
+    # expect: <static flags>          (tests/test_static_check.py, offline)
+    # expect-status: runtime_cheat    (one status, or several separated by " or ")
+    # expect-flags: input_insensitive (optional: flags the result must include)
+    # expect-max-speedup: 1.1         (optional: a trick must not buy a speedup over eager)
+    # red-team: skip-static           (optional: skip the scan, to test the layers behind it)
+Fixtures without expect-status are not run here.
 
-Run with: uv run modal run src/triton_kernel_agent/modal_fixtures.py [--only ok_relu,rt_...]
+Run with: uv run modal run src/triton_kernel_agent/modal_fixtures.py [--only ok_relu,...]
 """
 
 import json
@@ -32,79 +40,88 @@ def fixture_header(text: str, key: str) -> str | None:
 
 
 @app.function(gpu=GPU, image=image, timeout=900, max_containers=10)
-def run_fixture(name: str, source: str, task_source: str, input_domain: str) -> dict:
-    import dataclasses
-    import traceback
+def run_fixture(name: str, request: dict) -> dict:
+    from triton_kernel_agent.harness import EvalRequest, evaluate
 
-    import torch
-
-    from triton_kernel_agent.correctness import Case, run_case
-    from triton_kernel_agent.hidden_shapes import build_case, generate
-    from triton_kernel_agent.reference import INIT_SEED
-    from triton_kernel_agent.runtime_check import HarnessGuard, check_runtime, load_candidate
-    from triton_kernel_agent.static_check import scan
-
-    result: dict = {"fixture": name, "static": [f.value for f in scan(source).flags]}
-    guard = HarnessGuard()
-    try:
-        model_new = load_candidate(source, name).ModelNew  # the candidate's import
-
-        def candidate(init):
-            torch.manual_seed(INIT_SEED)
-            return model_new(*init).cuda()
-
-        cases = generate(name, task_source, input_domain=input_domain)
-        checks = []
-        for hidden in cases:
-            ref, init, inputs = build_case(task_source, hidden, "cuda")
-            check = run_case(ref, candidate(init), Case(inputs, hidden.shape_class), 1e-4, 1e-4)
-            checks.append({"shape_class": hidden.shape_class, "status": check.status,
-                           "message": check.message})  # fmt: skip
-        result["correctness"] = checks
-        result["correct"] = all(c["status"] is None for c in checks)
-
-        first = cases[0]
-        ref, init, inputs = build_case(task_source, first, "cuda")
-        _, _, fresh = build_case(
-            task_source, dataclasses.replace(first, seed=first.seed + 1), "cuda"
-        )
-        report = check_runtime(ref, candidate(init), inputs, fresh, source, guard)
-        result["runtime"] = [f.value for f in report.flags]
-        result["runtime_messages"] = [f.message for f in report.findings]
-        result["gpu_kernels"] = sorted(set(report.gpu_kernels))
-        result["aten_ops"] = sorted(set(report.aten_ops))
-    except Exception:
-        result["error"] = traceback.format_exc()[-1500:]
-    finally:
-        guard.restore()  # containers are reused: undo whatever the candidate patched
-    return result
+    result = evaluate(EvalRequest(**request))
+    return {"fixture": name, "result": json.loads(result.to_json())}
 
 
-def fixture_args(names: set[str] | None = None) -> list[tuple[str, str, str, str]]:
+def fixture_args(
+    names: set[str] | None = None, baselines: dict[str, dict] | None = None
+) -> list[tuple[str, dict]]:
     from triton_kernel_agent.tasks import get_task
 
     args = []
     for path in sorted(FIXTURES.glob("*.py")):
         text = path.read_text()
-        if names and path.stem not in names:
+        if (names and path.stem not in names) or fixture_header(text, "expect-status") is None:
             continue
-        if fixture_header(text, "expect-runtime") is None:
-            continue  # static-only fixture
         task = get_task(fixture_header(text, "task"))
-        args.append((path.stem, text, task.source, task.input_domain))
+        request = {
+            "task_id": task.id, "task_source": task.source, "candidate_source": text,
+            "atol": task.atol, "rtol": task.rtol, "bytes": task.bytes or 0,
+            "flops": task.flops or 0, "input_domain": task.input_domain,
+            "baselines": (baselines or {}).get(task.id),
+            "skip_static_scan": fixture_header(text, "red-team") == "skip-static",
+        }  # fmt: skip
+        args.append((path.stem, request))
     return args
+
+
+def run_all(names: set[str] | None = None) -> list[dict]:
+    """Every fixture; the first one per task times the baselines, the rest reuse them."""
+    args = fixture_args(names)
+    first: dict[str, tuple[str, dict]] = {}
+    for name, request in args:
+        if name.startswith("ok_"):
+            first.setdefault(request["task_id"], (name, request))
+    for name, request in args:
+        first.setdefault(request["task_id"], (name, request))
+    leaders = list(first.values())
+    out = list(run_fixture.starmap(leaders, order_outputs=True))
+    baselines = {}
+    for r in out:
+        bench = r["result"]["extra"].get("benchmark") or {}
+        if bench.get("eager_runs_ms"):
+            baselines[r["result"]["task_id"]] = {
+                "eager_runs_ms": bench["eager_runs_ms"],
+                "compile_runs_ms": bench["compile_runs_ms"],
+            }
+    done = {name for name, _ in leaders}
+    rest = [(n, r) for n, r in fixture_args(names, baselines) if n not in done]
+    out += list(run_fixture.starmap(rest, order_outputs=True))
+    return out
+
+
+def problems(results: list[dict]) -> list[str]:
+    """Fixtures whose result differs from their header."""
+    found = []
+    for r in results:
+        text = (FIXTURES / f"{r['fixture']}.py").read_text()
+        want = {s.strip() for s in fixture_header(text, "expect-status").split(" or ")}
+        flags = fixture_header(text, "expect-flags")
+        want_flags = {f.strip() for f in flags.split(",")} if flags else set()
+        status, got_flags = r["result"]["status"], set(r["result"]["cheat_flags"])
+        timing, max_speedup = r["result"].get("timing"), fixture_header(text, "expect-max-speedup")
+        if timing and max_speedup and timing["eager_ms"] / timing["kernel_ms"] > float(max_speedup):
+            found.append(f"{r['fixture']}: {timing['eager_ms'] / timing['kernel_ms']:.2f}x eager, "
+                         f"more than {max_speedup}x")  # fmt: skip
+        if status not in want or not want_flags <= got_flags:
+            found.append(f"{r['fixture']}: {status} {sorted(got_flags)}, expected "
+                         f"{' or '.join(sorted(want))} {sorted(want_flags)}")  # fmt: skip
+    return found
 
 
 @app.local_entrypoint()
 def main(only: str = "", out: str = "") -> None:
-    args = fixture_args(set(only.split(",")) if only else None)
-    results = list(run_fixture.starmap(args, order_outputs=True))
+    results = run_all(set(only.split(",")) if only else None)
     if out:
         Path(out).write_text(json.dumps(results, indent=1, default=str))
-    for r in results:
-        if "error" in r:
-            print(f"{r['fixture']:24} ERROR {r['error'][-300:]}")
-            continue
-        print(f"{r['fixture']:24} correct={r['correct']!s:5} runtime={r['runtime']} "
-              f"kernels={r['gpu_kernels'][:3]}")  # fmt: skip
-    print(f"{len(results)} fixtures", file=sys.stderr)
+    for r in sorted(results, key=lambda r: r["fixture"]):
+        res = r["result"]
+        timing = res.get("timing") or {}
+        speed = f"{timing['eager_ms'] / timing['kernel_ms']:.2f}x" if timing else ""
+        print(f"{r['fixture']:34} {res['status']:14} {','.join(res['cheat_flags']):28} {speed}")
+    bad = problems(results)
+    print("\n".join(bad) or "every fixture behaved as its header says", file=sys.stderr)

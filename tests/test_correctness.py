@@ -1,21 +1,20 @@
 """B5 acceptance tests on CPU: a known-correct kernel passes; one perturbed by 1e-2 fails;
-NaN output fails; wrong shape fails. Plus the Y2 rules (fp64-relative tolerance, strict fp32)."""
-
-import math
+NaN output fails; wrong shape fails. Plus the Y2 rules (fp64-relative tolerance, strict fp32).
+Candidates here are our own stand-ins, run in-process with check_trusted(); agent code runs in
+a worker process (tests/test_isolation.py)."""
 
 import pytest
 
 from triton_kernel_agent.correctness import (
     FLOOR_ULPS,
     REF_ERR_MULTIPLE,
-    Case,
-    check,
+    check_outputs,
+    check_trusted,
     compare,
-    run_case,
     strict_fp32,
     tf32_enabled,
 )
-from triton_kernel_agent.harness_result import HarnessResult, ShapeClass, Status
+from triton_kernel_agent.harness_result import Status
 
 torch = pytest.importorskip("torch")
 nn = torch.nn
@@ -69,8 +68,7 @@ def run(fn, x=None, ref=None, hidden=True):
     ref = ref or GemmGelu()
     torch.manual_seed(1)
     x = torch.randn(64, 512) if x is None else x
-    case = Case([x], ShapeClass.NON_POW2, hidden=hidden)
-    return run_case(ref, Candidate(ref, fn), case, ATOL, RTOL)
+    return check_trusted(ref, Candidate(ref, fn), [x], ATOL, RTOL, hidden=hidden)
 
 
 # --- the four roadmap acceptance checks ---
@@ -190,16 +188,6 @@ def test_without_fp64_the_fixed_tolerance_applies():
     assert (failed.status, failed.rule) == (Status.MISMATCH, "fixed")
 
 
-def test_candidate_crash_is_a_runtime_error():
-    def boom(ref, x):
-        raise RuntimeError("index 12345 out of bounds for size 4096")
-
-    result = run(boom)
-    assert result.status == Status.RUNTIME_ERROR
-    assert "12345" not in result.message and "4096" not in result.message
-    assert "12345" in run(boom, hidden=False).message
-
-
 def test_hidden_failure_messages_do_not_leak_shapes():
     message = run(lambda ref, x: ref(x)[:, :-1]).message
     assert "96" not in message and "95" not in message
@@ -215,46 +203,17 @@ def test_candidate_cannot_corrupt_the_reference_inputs():
     assert run(clobber).passed
 
 
-# --- check(): several cases, stop at the first failure ---
+# --- check_outputs(): every output tensor, worst error or first failure ---
 
 
-def test_check_stops_at_the_first_failing_case_and_fills_harness_fields():
-    ref = GemmGelu()
+def test_every_output_tensor_is_checked():
     torch.manual_seed(1)
-    cases = [
-        Case([torch.randn(64, 512)], ShapeClass.VISIBLE, hidden=False),
-        Case([torch.randn(1, 512)], ShapeClass.SIZE_ONE),
-        Case([torch.randn(33, 512)], ShapeClass.NON_POW2),
-        Case([torch.randn(8, 512)], ShapeClass.LARGE),
-    ]
-
-    def fails_on_odd_batch(r, x):
-        return r(x) + (1.0 if x.shape[0] == 33 else 0.0)
-
-    result = check(ref, Candidate(ref, fails_on_odd_batch), cases, ATOL, RTOL)
-    assert result.status == Status.MISMATCH
-    assert result.failing_shape_class == ShapeClass.NON_POW2
-    assert result.failing_shape == [[33, 512]]
-    assert len(result.cases) == 3  # stopped before the LARGE case
-
-    harness = HarnessResult(task_id="L2-86", **result.harness_fields())
-    assert HarnessResult.from_json(harness.to_json()) == harness
-
-    passing = check(ref, Candidate(ref, chunked_gemm), cases, ATOL, RTOL)
-    assert passing.passed and len(passing.cases) == 4
-    assert math.isfinite(passing.max_err)
-
-
-def test_runtime_error_harness_fields_have_no_shape():
-    ref = GemmGelu()
-
-    def boom(r, x):
-        raise ValueError("bad")
-
-    result = check(ref, Candidate(ref, boom), [Case([torch.randn(4, 512)], ShapeClass.SIZE_ONE)],
-                   ATOL, RTOL)  # fmt: skip
-    harness = HarnessResult(task_id="L2-86", **result.harness_fields())
-    assert harness.status == Status.RUNTIME_ERROR and harness.failing_shape_class is None
+    a, b = torch.randn(8, 8), torch.randn(4)
+    assert check_outputs([a, b], [a, b], [a.double(), b.double()], ATOL, RTOL, True).passed
+    bad = check_outputs([a, b + 1], [a, b], [a.double(), b.double()], ATOL, RTOL, True)
+    assert bad.status == Status.MISMATCH
+    count = check_outputs([a], [a, b], None, ATOL, RTOL, True)
+    assert count.status == Status.WRONG_SHAPE and "returned 1 tensors" in count.message
 
 
 # --- strict fp32 ---
@@ -286,8 +245,7 @@ def test_reference_runs_in_strict_fp32_even_if_the_candidate_turns_tf32_on():
 
     before = torch.backends.cuda.matmul.allow_tf32
     try:
-        run_case(Spy(), Candidate(None, sneaky), Case([torch.randn(4, 4)], ShapeClass.SIZE_ONE),
-                 ATOL, RTOL)  # fmt: skip
+        check_trusted(Spy(), Candidate(None, sneaky), [torch.randn(4, 4)], ATOL, RTOL)
         assert seen and not any(seen)
     finally:
         torch.backends.cuda.matmul.allow_tf32 = before

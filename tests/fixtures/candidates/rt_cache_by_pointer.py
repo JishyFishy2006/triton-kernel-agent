@@ -1,7 +1,8 @@
 # task: L1-19
-# expect: none
-# expect-runtime: input_insensitive
-# expect-correct: yes
+# expect: introspection
+# red-team: skip-static
+# expect-status: runtime_cheat
+# expect-flags: input_insensitive
 # L4 #4: cache keyed on the input buffer, which a benchmark reuses on every call.
 import torch
 import torch.nn as nn

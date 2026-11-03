@@ -55,14 +55,15 @@ app = modal.App("tka-roofline")
 @app.function(gpu=GPU, image=image, timeout=600)
 def copy_bandwidth(cand_source: str, nbytes_in: int = 2**30) -> dict:
     import torch
+    from triton.testing import do_bench
 
-    from triton_kernel_agent.benchmark import bench
     from triton_kernel_agent.roofline import peak_for, roofline
     from triton_kernel_agent.runtime_check import load_candidate
 
     model = load_candidate(cand_source, "copy").ModelNew()
     x = torch.rand(nbytes_in // 4, device="cuda")
-    kernel_ms = min(bench(lambda: model(x)))
+    # Our own copy kernel (B10's acceptance), so timing it in-process is fine.
+    kernel_ms = min(do_bench(lambda: model(x), return_mode="median") for _ in range(3))
     r = roofline(nbytes=2 * nbytes_in, flops=0, kernel_ms=kernel_ms,
                  peak=peak_for(torch.cuda.get_device_name()))  # fmt: skip
     return {"kernel_ms": kernel_ms, **r.as_dict()}

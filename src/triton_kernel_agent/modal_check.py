@@ -29,7 +29,7 @@ def check_task(task_id: str, source: str, input_domain: str, atol: float, rtol: 
 
     import torch
 
-    from triton_kernel_agent.correctness import Case, run_case
+    from triton_kernel_agent.correctness import check_trusted
     from triton_kernel_agent.hidden_shapes import build_case, generate
 
     class TF32(torch.nn.Module):
@@ -59,18 +59,17 @@ def check_task(task_id: str, source: str, input_domain: str, atol: float, rtol: 
     rows = []
     for i, hidden in enumerate(generate(task_id, source, input_domain=input_domain)):
         ref, _, inputs = build_case(source, hidden, "cuda")
-        case = Case(inputs, hidden.shape_class)
         candidates = {"copy": copy.deepcopy(ref), "tf32": TF32(copy.deepcopy(ref))}
         if i < COMPILE_CASES:
             candidates["compile"] = torch.compile(copy.deepcopy(ref))
         row = {"shape_class": hidden.shape_class, "distribution": hidden.distribution}
         for name, cand in candidates.items():
             try:
-                row[name] = summary(run_case(ref, cand, case, atol, rtol))
+                row[name] = summary(check_trusted(ref, cand, inputs, atol, rtol))
             except Exception as e:  # a harness bug, not a candidate failure: report it
                 row[name] = {"status": "harness_error", "message": repr(e)[-500:]}
         rows.append(row)
-        del ref, inputs, case, candidates
+        del ref, inputs, candidates
         gc.collect()
         torch.cuda.empty_cache()
     return {"task_id": task_id, "cases": rows}

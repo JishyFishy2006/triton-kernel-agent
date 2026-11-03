@@ -1,7 +1,7 @@
 # task: L1-19
 # expect: none
-# expect-runtime: output_aliases_input
-# expect-correct: yes
+# expect-status: runtime_cheat
+# expect-flags: output_aliases_input
 # L4 #5: no output buffer at all: overwrite the input and hand it back.
 import torch
 import torch.nn as nn

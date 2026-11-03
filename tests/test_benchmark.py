@@ -1,77 +1,67 @@
-"""B9 logic on CPU with a stand-in timer. Real timing is tests/test_live_benchmark.py."""
+"""B9 timing on CPU with a stand-in worker: calibration, the median, and the physical-speed
+check. Real workers: tests/test_isolation.py; on an H100: tests/test_live_benchmark.py."""
 
 import pytest
 
-from triton_kernel_agent.benchmark import benchmark
-from triton_kernel_agent.harness_result import Status
-
-torch = pytest.importorskip("torch")
-nn = torch.nn
+from triton_kernel_agent import benchmark
+from triton_kernel_agent.benchmark import TimingFailed, impossible_speed, time_worker
+from triton_kernel_agent.roofline import H100_SXM
 
 
-class Double(nn.Module):
-    def forward(self, x):
-        return x * 2
+class FakeWorker:
+    """Answers `time` commands; the parent's clock sees a fixed cost per call."""
+
+    def __init__(self, ms_per_call, fail_after=None):
+        self.ms, self.fail_after, self.calls = ms_per_call, fail_after, []
+
+    def call(self, command, timeout_s=None):
+        assert command["cmd"] == "time"
+        self.calls.append(command["calls"])
+        if self.fail_after is not None and len(self.calls) > self.fail_after:
+            return {"ok": False, "error": "RuntimeError", "message": "boom"}
+        benchmark.time.sleep(self.ms * command["calls"] / 1e3)
+        return {"ok": True}
 
 
-class CountingCandidate(nn.Module):
-    """Correct for the first `honest_calls` calls, then returns garbage (behaves while checked)."""
-
-    def __init__(self, honest_calls=10**9):
-        super().__init__()
-        self.calls, self.honest_calls = 0, honest_calls
-
-    def forward(self, x):
-        self.calls += 1
-        return x * 2 if self.calls <= self.honest_calls else torch.zeros_like(x)
-
-
-def fake_timer(times):
-    def timer(fn):
-        for _ in range(5):  # a real timer calls fn many times
-            fn()
-        return times.pop(0)
-
-    return timer
+def test_batches_are_calibrated_to_the_batch_length(monkeypatch):
+    monkeypatch.setattr(benchmark, "BATCH_MS", 40.0)
+    monkeypatch.setattr(benchmark, "REPEATS", 3)
+    worker = FakeWorker(ms_per_call=4.0)
+    timing = time_worker(worker)
+    assert worker.calls[:2] == [1, 1]  # first call (JIT / compile), then calibration
+    assert 5 <= timing.calls <= 10 and len(worker.calls) == 5
+    # Measured batches make a random number of calls, so the checked last call is unknown.
+    assert all(timing.calls <= n <= 1.5 * timing.calls for n in worker.calls[2:])
+    assert timing.median_ms == pytest.approx(4.0, rel=0.5)
+    assert timing.first_call_s == pytest.approx(0.004, rel=1.0)
 
 
-def run(cand, times=None, compile_baseline=False):
-    times = times or [[2.0, 2.2, 2.1], [1.0, 0.9, 1.1]]
-    torch.manual_seed(0)
-    x = torch.randn(64, 64)
-    return benchmark(Double(), cand, [x], 1e-4, 1e-4, compile_baseline, timer=fake_timer(times))
+def test_after_batch_runs_after_each_measured_batch(monkeypatch):
+    monkeypatch.setattr(benchmark, "BATCH_MS", 5.0)
+    monkeypatch.setattr(benchmark, "REPEATS", 3)
+    worker, seen = FakeWorker(1.0), []
+    time_worker(worker, after_batch=lambda i: seen.append((i, len(worker.calls))))
+    assert seen == [(0, 3), (1, 4), (2, 5)]  # not after the first call or the calibration
 
 
-def test_timing_is_the_median_of_repeats_and_speedups_follow():
-    result = run(CountingCandidate())
-    assert result.consistent
-    # compile_baseline=False: compile_ms falls back to eager.
-    assert (result.timing.eager_ms, result.timing.kernel_ms) == (2.1, 1.0)
-    assert result.timing.speedup_eager == pytest.approx(2.1)
-    assert result.extra["kernel_runs_ms"] == [1.0, 0.9, 1.1]
+def test_a_worker_that_raises_while_timed_fails_the_timing(monkeypatch):
+    monkeypatch.setattr(benchmark, "BATCH_MS", 5.0)
+    with pytest.raises(TimingFailed):
+        time_worker(FakeWorker(1.0, fail_after=2))
 
 
-def test_a_candidate_that_changes_after_the_checks_is_caught():
-    result = run(CountingCandidate(honest_calls=3))
-    assert not result.consistent
-    assert result.post_check.status == Status.MISMATCH
+def test_faster_than_moving_the_bytes_is_impossible():
+    # L1-1: 201 MB at 3.35 TB/s takes 0.060 ms.
+    nbytes = 201_326_592
+    assert impossible_speed(nbytes, 2.7, H100_SXM) is None  # cuBLAS fp32
+    assert impossible_speed(nbytes, 0.058, H100_SXM) is None  # 103% of peak: rounding
+    assert "faster than the H100 SXM" in impossible_speed(nbytes, 0.019, H100_SXM)  # memoized
+    # Memory-bound ReLU: 4096 x 393216 floats in and out.
+    relu_bytes = 2 * 4096 * 393216 * 4
+    assert impossible_speed(relu_bytes, 4.3, H100_SXM) is None
+    assert impossible_speed(relu_bytes, 0.5, H100_SXM) is not None
 
 
-def test_compile_baseline_is_timed_separately():
-    times = [[2.0, 2.0, 2.0], [1.5, 1.5, 1.5], [1.0, 1.0, 1.0]]
-    result = run(CountingCandidate(), times=times, compile_baseline=True)
-    assert result.timing.compile_ms == 1.5
-    assert result.timing.speedup_compile == pytest.approx(1.5)
-    assert result.extra["compile_s"] > 0
-
-
-def test_cached_baselines_skip_eager_and_compile_timing():
-    torch.manual_seed(0)
-    x = torch.randn(64, 64)
-    cached = {"eager_runs_ms": [3.0, 3.0, 3.0], "compile_runs_ms": [2.0, 2.0, 2.0]}
-    result = benchmark(
-        Double(), CountingCandidate(), [x], 1e-4, 1e-4, timer=fake_timer([[1.0, 1.0, 1.0]]),
-        baselines=cached,
-    )  # fmt: skip
-    assert (result.timing.eager_ms, result.timing.compile_ms, result.timing.kernel_ms) == (3, 2, 1)
-    assert result.extra["baselines_cached"] and result.extra["compile_runs_ms"] == [2.0] * 3
+def test_flops_give_no_floor():
+    # L1-56: eager (cuDNN) beats the FLOP count's floor of 8.70 ms; only bytes count.
+    assert impossible_speed(790_000_000, 3.56, H100_SXM) is None

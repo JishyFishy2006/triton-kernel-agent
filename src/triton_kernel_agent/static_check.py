@@ -72,9 +72,9 @@ COMPUTE = frozenset(
         "tanh", "hardtanh", "hardswish", "hardsigmoid", "leaky_relu", "elu", "selu", "celu",
         "softplus", "softsign", "logsigmoid", "tanhshrink", "threshold", "glu", "exp", "exp2",
         "expm1", "log", "log2", "log10", "log1p", "sqrt", "rsqrt", "pow", "square", "abs",
-        "sin", "cos", "erf", "erfc", "erfinv", "clamp", "clip", "where", "add", "sub",
-        "subtract", "mul", "multiply", "div", "divide", "true_divide", "addcmul", "addcdiv",
-        "maximum", "minimum", "lerp", "neg", "reciprocal", "sign", "dropout",
+        "sin", "cos", "erf", "erfc", "erfinv", "clamp", "clamp_min", "clamp_max", "clip",
+        "where", "add", "sub", "subtract", "mul", "multiply", "div", "divide", "true_divide",
+        "addcmul", "addcdiv", "maximum", "minimum", "lerp", "neg", "reciprocal", "sign", "dropout",
         # reductions, norms, losses, attention
         "sum", "mean", "prod", "cumsum", "cumprod", "max", "min", "amax", "amin", "argmax",
         "argmin", "logsumexp", "logcumsumexp", "norm", "var", "std", "var_mean", "std_mean",
@@ -110,6 +110,9 @@ INTROSPECTION_ATTRS = frozenset(
     }
 )  # fmt: skip
 MONKEYPATCH_CALLS = frozenset({"setattr", "delattr", "exec", "eval", "compile", "__import__"})
+# Builtins that must not even be named outside a direct call: `f = exec; f(src)` or
+# `g = getattr` would get past the checks on calls (review of the Y4 scan).
+BARE_BUILTINS = MONKEYPATCH_CALLS | INTROSPECTION_CALLS | FILE_CALLS | {"getattr", "hasattr"}
 SIDE_STREAM_ATTRS = frozenset(
     {
         "Stream", "stream", "set_stream", "ExternalStream", "CUDAGraph", "graph", "graphs",
@@ -117,6 +120,35 @@ SIDE_STREAM_ATTRS = frozenset(
     }
 )  # fmt: skip
 BACKEND_ATTRS = frozenset({"backends", "set_float32_matmul_precision", "allow_tf32"})
+# Y4 red team: routes around the import allowlist and the checks. Modules reachable as
+# attributes of torch (torch.sys is the real sys), and parts of torch that hook its dispatch.
+MODULE_ATTRS = frozenset(
+    {
+        "sys", "os", "modules", "builtins", "importlib", "subprocess", "gc", "inspect",
+        "ctypes", "threading", "multiprocessing", "signal", "overrides", "library", "hub",
+        "testing", "fx", "export", "distributed", "package", "core", "semantic",
+    }
+)  # fmt: skip
+# Dunder attributes a kernel wrapper needs; any other reaches into objects (x.__dict__,
+# type.__setattr__, Tensor.__torch_function__, an explicit __enter__()).
+DUNDERS_ALLOWED = frozenset({"__init__", "__name__", "__class__", "__doc__", "__qualname__"})
+# What caching and "behave only when checked" need: buffer identity, version counters, memory
+# state, hooks and dispatch modes (Y4 A5, A6, B1, B2, D1, E3).
+DETECTION_ATTRS = frozenset(
+    {
+        "data_ptr", "_version", "untyped_storage", "storage", "storage_offset", "_cdata",
+        "memory_reserved", "memory_allocated", "max_memory_allocated", "memory_stats",
+        "mem_get_info", "as_subclass", "_make_subclass", "fn", "update_wrapper",
+    }
+)  # fmt: skip
+# Strict fp32 (Y2 decision 1): no lower-precision values, even split into several (Y4 D8).
+LOW_PRECISION_ATTRS = frozenset(
+    {
+        "float16", "half", "bfloat16", "float8_e4m3fn", "float8_e5m2", "float8_e4m3fnuz",
+        "float8_e5m2fnuz", "float8e4nv", "float8e5", "float8e4b15", "float8e4b8", "float8e5b16",
+        "fp8e4nv", "fp8e5",
+    }
+)  # fmt: skip
 JIT_DECORATORS = frozenset({"triton.jit", "triton.autotune", "triton.heuristics"})
 # Literal data limits: a block size table is fine, a precomputed answer is not.
 MAX_LITERAL_NUMBERS = 64
@@ -170,6 +202,7 @@ class _Scanner(ast.NodeVisitor):
         self.compute_attrs: set[str] = set()  # self.<attr> holding a compute nn.Module
         self.in_kernel = False
         self.in_literal = False
+        self.call_funcs: set[int] = set()  # id() of nodes in call position
 
     def flag(self, flag: CheatFlag, node: ast.AST, message: str) -> None:
         self.findings.append(Finding(flag, getattr(node, "lineno", 0), message))
@@ -185,7 +218,9 @@ class _Scanner(ast.NodeVisitor):
         if not isinstance(node, ast.Name):
             return None
         root = self.aliases.get(node.id, node.id)
-        return ".".join([root, *reversed(parts)])
+        path = ".".join([root, *reversed(parts)])
+        # tl.core.dot is tl.dot: judge it the same way (it is also flagged as internal).
+        return path.replace("triton.language.core.", "triton.language.")
 
     def is_module_path(self, path: str | None) -> bool:
         if not path:
@@ -229,6 +264,9 @@ class _Scanner(ast.NodeVisitor):
         decorators = {
             self.dotted(d.func if isinstance(d, ast.Call) else d) for d in node.decorator_list
         }
+        if decorators & JIT_DECORATORS and not decorators <= JIT_DECORATORS:
+            # @wrap @triton.jit can hand back the plain Python function (Y4 A s1).
+            self.flag(CheatFlag.MONKEYPATCH, node, "other decorators around @triton.jit")
         was = self.in_kernel
         self.in_kernel = was or bool(decorators & JIT_DECORATORS)
         for stmt in node.body:
@@ -237,6 +275,14 @@ class _Scanner(ast.NodeVisitor):
 
     visit_AsyncFunctionDef = visit_FunctionDef
 
+    def visit_ClassDef(self, node: ast.ClassDef) -> None:
+        for base in node.bases:
+            path = self.dotted(base) or ""
+            if path.startswith("torch.") and path.split(".")[-1] in ("Tensor", "TensorBase"):
+                # A subclass can answer the checker's own arithmetic (Y4 C01, E1).
+                self.flag(CheatFlag.INTROSPECTION, node, f"subclasses {path}")
+        self.generic_visit(node)
+
     # --- calls ---
 
     def compute_path(self, path: str | None) -> bool:
@@ -244,28 +290,39 @@ class _Scanner(ast.NodeVisitor):
             return False
         if any(path == r or path.startswith(r if r.endswith("_") else r + ".") for r in RAW_TORCH):
             return True
-        return path.split(".")[-1].rstrip("_") in COMPUTE
+        return path.split(".")[-1].strip("_") in COMPUTE
 
     def visit_Call(self, node: ast.Call) -> None:
+        self.call_funcs.add(id(node.func))
         path = self.dotted(node.func)
         name = path.split(".")[-1] if path else None
 
         if self.in_kernel:
             if path in ("triton.language.dot", "triton.language.dot_scaled"):
                 self.check_dot(node, path)
+            elif path and path.split(".")[0] == "torch":
+                self.flag(CheatFlag.TORCH_COMPUTE_CALL, node, f"calls {path} inside a kernel")
         else:
             self.check_compute_call(node, path)
+        if isinstance(node.func, ast.Call):
+            ctor = (self.dotted(node.func.func) or "").split(".")[-1]
+            if ctor in COMPUTE_MODULES:
+                self.flag(CheatFlag.TORCH_COMPUTE_CALL, node, f"calls a new nn.{ctor} module")
 
         if name in MONKEYPATCH_CALLS and path == name:
             self.flag(CheatFlag.MONKEYPATCH, node, f"{name}() can rewrite code at runtime")
-        if path == "getattr" and node.args and self.is_module_path(self.dotted(node.args[0])):
+        if path in ("getattr", "hasattr") and node.args:
             target = node.args[1] if len(node.args) > 1 else None
             if isinstance(target, ast.Constant) and isinstance(target.value, str):
                 attr_path = f"{self.dotted(node.args[0])}.{target.value}"
                 if self.compute_path(attr_path):
                     self.flag(CheatFlag.TORCH_COMPUTE_CALL, node, f"getattr reaches {attr_path}")
-            else:
-                self.flag(CheatFlag.MONKEYPATCH, node, "getattr on a module with a computed name")
+                # getattr(x, "name") is x.name: same attribute rules.
+                fake = ast.Attribute(value=node.args[0], attr=target.value, ctx=ast.Load())
+                ast.copy_location(fake, node)
+                self.check_attribute(fake, self.dotted(fake))
+            else:  # a computed name hides what is reached ("mat" + "mul", Y4 A s3)
+                self.flag(CheatFlag.MONKEYPATCH, node, f"{path} with a computed attribute name")
         if path in FILE_CALLS or (path or "").startswith(("numpy.load", "numpy.fromfile")):
             self.flag(CheatFlag.FILE_OR_NETWORK, node, f"{path}() reads or writes files")
         if path in INTROSPECTION_CALLS:
@@ -291,7 +348,7 @@ class _Scanner(ast.NodeVisitor):
             elif (
                 root not in {"self", "triton", "math"}
                 and not self.is_module_path(receiver)
-                and func.attr.rstrip("_") in COMPUTE
+                and func.attr.strip("_") in COMPUTE
             ):
                 self.flag(CheatFlag.TORCH_COMPUTE_CALL, node, f".{func.attr}() computes in PyTorch")
 
@@ -306,8 +363,32 @@ class _Scanner(ast.NodeVisitor):
     # --- attributes, assignments and literals ---
 
     def visit_Attribute(self, node: ast.Attribute) -> None:
-        path = self.dotted(node)
-        if node.attr in INTROSPECTION_ATTRS:
+        self.check_attribute(node, self.dotted(node))
+        self.generic_visit(node)
+
+    def check_attribute(self, node: ast.Attribute, path: str | None) -> None:
+        attr = node.attr
+        module = self.is_module_path(path)
+        # torch.utils holds the dispatch and pytree internals; triton's driver.active.utils
+        # (device properties, used by the official tutorials) is fine.
+        torch_utils = attr == "utils" and (path or "").startswith("torch.")
+        if module and (attr in MODULE_ATTRS or torch_utils):
+            self.flag(CheatFlag.INTROSPECTION, node, f"{path} reaches past the import allowlist")
+        elif module and attr.startswith("_") and not attr.startswith("__"):
+            self.flag(CheatFlag.INTROSPECTION, node, f"{path} is a private internal")
+        dunder = attr.startswith("__") and attr.endswith("__")
+        # x.__matmul__(w) is reported as compute; other dunders reach into objects.
+        if dunder and attr not in DUNDERS_ALLOWED and attr.strip("_") not in COMPUTE:
+            self.flag(CheatFlag.INTROSPECTION, node, f".{attr} reaches into objects")
+        if attr in DETECTION_ATTRS or "hook" in attr.lower():
+            self.flag(CheatFlag.INTROSPECTION, node, f".{attr} can tell checked calls apart")
+        if attr in LOW_PRECISION_ATTRS:
+            self.flag(CheatFlag.LOW_PRECISION, node, f"{attr} is below strict fp32")
+        if path in ("triton.language.dot", "triton.language.dot_scaled") and (
+            id(node) not in self.call_funcs
+        ):
+            self.flag(CheatFlag.TF32_DOT, node, "tl.dot used as a value hides its precision")
+        if attr in INTROSPECTION_ATTRS:
             self.flag(CheatFlag.INTROSPECTION, node, f".{node.attr} reaches into other code")
         if node.attr == "__builtins__":
             self.flag(CheatFlag.MONKEYPATCH, node, "touches __builtins__")
@@ -323,11 +404,12 @@ class _Scanner(ast.NodeVisitor):
             and node.attr in SIDE_STREAM_ATTRS
         ):
             self.flag(CheatFlag.SIDE_STREAM, node, f"uses {path}")
-        self.generic_visit(node)
 
     def visit_Name(self, node: ast.Name) -> None:
         if node.id == "__builtins__":
             self.flag(CheatFlag.MONKEYPATCH, node, "touches __builtins__")
+        if node.id in BARE_BUILTINS and id(node) not in self.call_funcs:
+            self.flag(CheatFlag.MONKEYPATCH, node, f"{node.id} used as a value, not called")
 
     def check_targets(self, targets: list[ast.expr], node: ast.AST) -> None:
         for target in targets:
@@ -342,6 +424,14 @@ class _Scanner(ast.NodeVisitor):
 
     def visit_Assign(self, node: ast.Assign) -> None:
         self.check_targets(node.targets, node)
+        # cu = torch.cuda; cu.Stream(): follow simple aliases of module paths (Y4 B4, D4).
+        value = (
+            self.dotted(node.value) if isinstance(node.value, ast.Attribute | ast.Name) else None
+        )
+        if value and value.split(".")[0] in {"torch", "triton"}:
+            for t in node.targets:
+                if isinstance(t, ast.Name):
+                    self.aliases[t.id] = value
         # Remember self.x = nn.Linear(...) so a later self.x(...) call is caught.
         if isinstance(node.value, ast.Call):
             ctor = (self.dotted(node.value.func) or "").split(".")[-1]
