@@ -1,0 +1,101 @@
+{
+  "label": "Triton tutorial kernels (adapted)",
+  "results": {
+    "L1-23": {
+      "cheat_flags": [],
+      "error_excerpt": "",
+      "extra": {
+        "benchmark": {
+          "baselines_cached": false,
+          "compile_runs_ms": [
+            6.544256210327148,
+            6.5406718254089355,
+            6.541088104248047
+          ],
+          "compile_s": 1.7169036849999983,
+          "eager_runs_ms": [
+            8.483183860778809,
+            8.477791786193848,
+            8.480064392089844
+          ],
+          "kernel_runs_ms": [
+            6.633440017700195,
+            6.632351875305176,
+            6.632767915725708
+          ],
+          "repeats": 3
+        },
+        "roofline": {
+          "achieved_bandwidth": 1942613106882.7288,
+          "achieved_flops": 0.0,
+          "arithmetic_intensity": 0.0,
+          "bound": "memory",
+          "pct_peak_bandwidth": 57.988450951723244,
+          "pct_peak_flops": null
+        }
+      },
+      "failing_shape": null,
+      "failing_shape_class": null,
+      "gpu_seconds": 21.680924585,
+      "harness_version": "v0",
+      "max_err": 2.55239809954233e-07,
+      "pct_peak_bandwidth": 57.988450951723244,
+      "pct_peak_flops": null,
+      "status": "correct",
+      "task_id": "L1-23",
+      "timing": {
+        "compile_ms": 6.541088104248047,
+        "eager_ms": 8.480064392089844,
+        "kernel_ms": 6.632767915725708
+      }
+    },
+    "L1-40": {
+      "cheat_flags": [],
+      "error_excerpt": "",
+      "extra": {
+        "benchmark": {
+          "baselines_cached": false,
+          "compile_runs_ms": [
+            0.4696640074253082,
+            0.4679200053215027,
+            0.46931201219558716
+          ],
+          "compile_s": 2.1913657959999995,
+          "eager_runs_ms": [
+            8.151968002319336,
+            8.155616283416748,
+            8.160624027252197
+          ],
+          "kernel_runs_ms": [
+            0.3107040077447891,
+            0.31091201305389404,
+            0.3107200115919113
+          ],
+          "repeats": 3
+        },
+        "roofline": {
+          "achieved_bandwidth": 1835817851182.2937,
+          "achieved_flops": 0.0,
+          "arithmetic_intensity": 0.0,
+          "bound": "memory",
+          "pct_peak_bandwidth": 54.80053287111325,
+          "pct_peak_flops": null
+        }
+      },
+      "failing_shape": null,
+      "failing_shape_class": null,
+      "gpu_seconds": 10.283155415,
+      "harness_version": "v0",
+      "max_err": 8.358053777968166e-07,
+      "pct_peak_bandwidth": 54.80053287111325,
+      "pct_peak_flops": null,
+      "status": "correct",
+      "task_id": "L1-40",
+      "timing": {
+        "compile_ms": 0.46931201219558716,
+        "eager_ms": 8.155616283416748,
+        "kernel_ms": 0.3107200115919113
+      }
+    }
+  }
+}
