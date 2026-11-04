@@ -45,6 +45,15 @@ def test_renders_runs_leaderboard_tasks_and_cheats():
     assert page.count("<polyline") == 2  # one correct-within-k curve per run
 
 
+def test_demo_runs_are_left_off_the_page():
+    with ResultsDB() as db:
+        fill(db)
+        db.insert_run(Run("demo-L1-19-x", {"setup": "wonder_spark", "demo": "L1-19"},
+                          datetime.now(UTC), "a"))  # fmt: skip
+        page = render(db, gpu_usd_per_hour=3.95)
+    assert "run-wonder_spark" in page and "demo-L1-19-x" not in page
+
+
 def test_html_in_data_is_escaped():
     with ResultsDB() as db:
         db.upsert_tasks(load_tasks())

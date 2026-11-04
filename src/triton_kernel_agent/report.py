@@ -65,9 +65,11 @@ def _usd(x: float | None) -> str:
 
 
 def _runs(db: ResultsDB) -> list[tuple[str, str, str]]:
-    """(run_id, setup, started_at) for every run, newest first."""
+    """(run_id, setup, started_at) for every batch run, newest first. `tka demo` runs are
+    single tasks shown live, not results, so they stay off the page."""
     rows = db.sql("SELECT run_id, config, started_at FROM runs ORDER BY started_at DESC")
-    return [(r[0], json.loads(r[1]).get("setup", "?"), str(r[2])[:16]) for r in rows]
+    configs = [(r[0], json.loads(r[1]), str(r[2])[:16]) for r in rows]
+    return [(run_id, c.get("setup", "?"), at) for run_id, c, at in configs if "demo" not in c]
 
 
 def _leaderboard(rows: list[tuple[str, str, Metrics]]) -> str:
