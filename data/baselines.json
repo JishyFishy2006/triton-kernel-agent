@@ -7,46 +7,56 @@
       "extra": {
         "benchmark": {
           "baselines_cached": false,
+          "calls_per_batch": 22,
           "compile_runs_ms": [
-            6.544256210327148,
-            6.5406718254089355,
-            6.541088104248047
+            6.667380000000086,
+            6.669957333333325,
+            6.671462000000109,
+            6.673948820512794,
+            6.674529466666712
           ],
-          "compile_s": 1.7169036849999983,
+          "compile_s": 2.614840481999998,
           "eager_runs_ms": [
-            8.483183860778809,
-            8.477791786193848,
-            8.480064392089844
+            8.649095096774225,
+            8.660868318181771,
+            8.647018875000079,
+            8.644298346153844,
+            8.652060172413838
           ],
+          "first_call_s": 1.2635139920000003,
           "kernel_runs_ms": [
-            6.633440017700195,
-            6.632351875305176,
-            6.632767915725708
-          ],
-          "repeats": 3
+            6.765892142857309,
+            6.889384875000015,
+            6.948099772726963,
+            6.930442999999897,
+            6.908005888888624
+          ]
         },
+        "gpu_kernels": [
+          "softmax_kernel"
+        ],
         "roofline": {
-          "achieved_bandwidth": 1942613106882.7288,
+          "achieved_bandwidth": 1865212927615.6353,
           "achieved_flops": 0.0,
           "arithmetic_intensity": 0.0,
           "bound": "memory",
-          "pct_peak_bandwidth": 57.988450951723244,
+          "pct_peak_bandwidth": 55.6779978392727,
           "pct_peak_flops": null
         }
       },
       "failing_shape": null,
       "failing_shape_class": null,
-      "gpu_seconds": 21.680924585,
-      "harness_version": "v0",
+      "gpu_seconds": 87.939945522,
+      "harness_version": "v1",
       "max_err": 2.55239809954233e-07,
-      "pct_peak_bandwidth": 57.988450951723244,
+      "pct_peak_bandwidth": 55.6779978392727,
       "pct_peak_flops": null,
       "status": "correct",
       "task_id": "L1-23",
       "timing": {
-        "compile_ms": 6.541088104248047,
-        "eager_ms": 8.480064392089844,
-        "kernel_ms": 6.632767915725708
+        "compile_ms": 6.671462000000109,
+        "eager_ms": 8.649095096774225,
+        "kernel_ms": 6.908005888888624
       }
     },
     "L1-40": {
@@ -55,46 +65,58 @@
       "extra": {
         "benchmark": {
           "baselines_cached": false,
+          "calls_per_batch": 176,
           "compile_runs_ms": [
-            0.4696640074253082,
-            0.4679200053215027,
-            0.46931201219558716
+            0.4420222863070479,
+            0.44301743352605827,
+            0.4425347513812601,
+            0.44179809905661777,
+            0.4418856192660601
           ],
-          "compile_s": 2.1913657959999995,
+          "compile_s": 2.926492056000001,
           "eager_runs_ms": [
-            8.151968002319336,
-            8.155616283416748,
-            8.160624027252197
+            8.256221241379473,
+            8.261273774193555,
+            8.264517217390878,
+            8.253973000000414,
+            8.254145000000007
           ],
+          "first_call_s": 1.2057403609999964,
           "kernel_runs_ms": [
-            0.3107040077447891,
-            0.31091201305389404,
-            0.3107200115919113
-          ],
-          "repeats": 3
+            0.29481462801936026,
+            0.2950116538461397,
+            0.29498941666664297,
+            0.2949345198412774,
+            0.29665384189721866
+          ]
         },
+        "gpu_kernels": [
+          "ln_apply_kernel",
+          "ln_combine_stats_kernel",
+          "ln_partial_stats_kernel"
+        ],
         "roofline": {
-          "achieved_bandwidth": 1835817851182.2937,
+          "achieved_bandwidth": 1933714607275.614,
           "achieved_flops": 0.0,
           "arithmetic_intensity": 0.0,
           "bound": "memory",
-          "pct_peak_bandwidth": 54.80053287111325,
+          "pct_peak_bandwidth": 57.72282409777952,
           "pct_peak_flops": null
         }
       },
       "failing_shape": null,
       "failing_shape_class": null,
-      "gpu_seconds": 10.283155415,
-      "harness_version": "v0",
+      "gpu_seconds": 26.247967967999998,
+      "harness_version": "v1",
       "max_err": 8.358053777968166e-07,
-      "pct_peak_bandwidth": 54.80053287111325,
+      "pct_peak_bandwidth": 57.72282409777952,
       "pct_peak_flops": null,
       "status": "correct",
       "task_id": "L1-40",
       "timing": {
-        "compile_ms": 0.46931201219558716,
-        "eager_ms": 8.155616283416748,
-        "kernel_ms": 0.3107200115919113
+        "compile_ms": 0.4420222863070479,
+        "eager_ms": 8.256221241379473,
+        "kernel_ms": 0.29498941666664297
       }
     }
   }
